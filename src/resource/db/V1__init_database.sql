@@ -18,37 +18,37 @@ create table if not exists impresoras(
     titulo text,
     vida_util integer,
     watts integer,
-    precio_compra real(10, 2),
-    precio_respuesto real(10, 2),
-    amortizacion real(10, 2)
+    precio_compra integer,
+    precio_respuesto integer,
+    amortizacion integer
 );
 
 create table if not exists materiales(
     id integer primary key not null,
     nombre text,
-    precio_compra real(10, 2),
+    precio_compra integer,
     merma integer,
     precio_costo integer,
     dimensiones text,
-    stock integer,
+    stock integer
 );
 
 create table if not exists ajustes(
     id integer primary key not null,
     nombre text,
-    gasto integer
-    id_periodo integer references periodo(id),
+    gasto integer,
+    id_periodo integer references periodo(id)
 );
 
 create table if not exists historial(
     id integer primary key not null,
     titulo text,
-    id_impresora integer references impresoras(id), 
+    id_impresora text references impresoras(id), 
     tiempo_grabado text,
     tiempo_obra text,
     id_material integer references materiales(id),
     cantidad integer, 
     ganancia integer,
     precio_final integer,
-    fecha_guardado text,
+    fecha_guardado text
 );
