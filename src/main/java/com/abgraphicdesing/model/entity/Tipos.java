@@ -7,9 +7,11 @@ public class Tipos {
   private String tipo;
 
   public Tipos(){ }
+
   public Tipos(String tipo){
     this.setTipo(tipo);
   }
+  
   public Tipos(UUID id, String tipo){
     this.id = id;
     this.tipo = tipo;

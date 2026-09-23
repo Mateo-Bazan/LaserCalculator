@@ -11,12 +11,10 @@ import com.abgraphicdesing.view.MainView;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
 import javafx.stage.Stage;
 
 public class App extends Application{
   public static void main( String[] args ){
-    System.out.println( "Hello World!" );
     DbConfig dbConfig = new DbConfig();
     InitializerDatabase initializer = new InitializerDatabase(dbConfig);
     
@@ -45,6 +43,7 @@ public class App extends Application{
     MainView mainView = new MainView();
     Scene scene = new Scene(mainView, 1200, 800);
 
+    scene.getStylesheets().clear();
     scene.getStylesheets().add(
       getClass().getResource("/css/styles.css").toExternalForm()
     );
