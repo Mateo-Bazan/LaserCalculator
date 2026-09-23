@@ -7,6 +7,7 @@ import java.sql.SQLException;
 
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.database.InitializerDatabase;
+import com.abgraphicdesing.view.MainView;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -41,9 +42,12 @@ public class App extends Application{
 
   @Override
   public void start(Stage primaryStage){
-    Label label = new Label("Esto funca");
-    Scene scene = new Scene(label, 1200, 800);
+    MainView mainView = new MainView();
+    Scene scene = new Scene(mainView, 1200, 800);
 
+    scene.getStylesheets().add(
+      getClass().getResource("/css/styles.css").toExternalForm()
+    );
 
     primaryStage.setTitle("Ejemplo inicializador");
     primaryStage.setScene(scene);
