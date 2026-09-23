@@ -36,7 +36,7 @@ public class Materiales {
       this.nombre = nombre;
       this.precioCompra = precioCompra;
       this.merma = merma;
-      this.precioCosto = precioCompra + precioCompra*(merma/100);
+      this.setPrecioCosto(precioCompra, merma);
       this.dimensiones = dimensiones;
       this.stock = stock;
       this.id = id;
@@ -78,8 +78,7 @@ public class Materiales {
     this.merma = merma;
   }
   public void setPrecioCosto(int precioCompra, int merma){
-    int porc = merma / 100;
-    this.precioCosto = precioCompra + (precioCompra*porc);
+    this.precioCosto = precioCompra + ((precioCompra*merma)/100);
   }
   public void setDimensiones(String dimensiones){
     this.dimensiones = dimensiones;
