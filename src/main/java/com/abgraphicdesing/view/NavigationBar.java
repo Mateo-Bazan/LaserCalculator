@@ -10,6 +10,12 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 
 public class NavigationBar extends HBox{
+  private final Button calculadoraButton;
+  private final Button impresorasButton;
+  private final Button materialesButton;
+  private final Button ajustesButton;
+  private final Button historialButton;
+
   public NavigationBar(){
     HBox buttonsContainer = new HBox();
     Label label = new Label("AB Graphic Desing");
@@ -17,23 +23,30 @@ public class NavigationBar extends HBox{
       getClass().getResourceAsStream("/assets/iconoAbGD.png")
     );
     ImageView icon = new ImageView(image);
-    icon.setFitHeight(25);
-    icon.setFitWidth(25);
+    icon.setFitHeight(40);
+    icon.setFitWidth(40);
 
     HBox item = new HBox(8);
     item.getChildren().addAll(icon, label);
     item.setAlignment(Pos.CENTER);
 
 
-    Button inicio = new Button("Calculadora");
-    Button impresoras = new Button("Impresoras");
-    Button materiales = new Button("Materiales");
-    Button ajustes = new Button("Ajustes");
-    Button historial = new Button("Historial");
+    calculadoraButton = new Button("Calculadora");
+    impresorasButton = new Button("Impresoras");
+    materialesButton = new Button("Materiales");
+    ajustesButton = new Button("Ajustes");
+    historialButton = new Button("Historial");
     
     getStyleClass().add("navigation-bar");
 
-    buttonsContainer.getChildren().addAll(inicio, impresoras, materiales, ajustes, historial);
+    buttonsContainer.getChildren().addAll(
+      calculadoraButton, 
+      impresorasButton, 
+      materialesButton, 
+      ajustesButton, 
+      historialButton
+    );
+
     buttonsContainer.setAlignment(Pos.CENTER);
     buttonsContainer.getStyleClass().add("nav-button");
 
@@ -44,4 +57,25 @@ public class NavigationBar extends HBox{
 
     getChildren().addAll(item, spacer, buttonsContainer);
   }
+
+  public void setOnCalculadora(Runnable action){
+    calculadoraButton.setOnAction(event -> action.run());
+  }
+
+  public void setOnImpresora(Runnable action){
+    impresorasButton.setOnAction(event -> action.run());
+  }
+
+  public void setOnMateriales(Runnable action){
+    materialesButton.setOnAction(event -> action.run());
+  }
+
+  public void setOnAjustes(Runnable action){
+    ajustesButton.setOnAction(event -> action.run());
+  }
+
+  public void setOnHistorial(Runnable action){
+    historialButton.setOnAction(event -> action.run());
+  }
+
 }

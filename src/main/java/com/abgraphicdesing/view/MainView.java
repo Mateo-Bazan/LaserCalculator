@@ -7,5 +7,11 @@ public class MainView extends BorderPane{
     NavigationBar navigationBar = new NavigationBar();
 
     setTop(navigationBar);
+
+
+    navigationBar.setOnImpresora(
+      () -> setCenter(new ImpresorasView())
+    );
+
   }
 }
