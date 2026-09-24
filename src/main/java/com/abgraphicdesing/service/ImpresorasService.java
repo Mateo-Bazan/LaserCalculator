@@ -32,16 +32,41 @@ public class ImpresorasService{
   }
 
   public Impresoras create(ImpresorasReqDto dto){
-    Impresoras impresoraToSave = new Impresoras();
+    Impresoras impresoraToSave = new Impresoras(
+      dto.idTipo(),
+      dto.marca(),
+      dto.modelo(),
+      dto.titulo(),
+      dto.vidaUtil(),
+      dto.watts(),
+      dto.precioCompra(),
+      dto.precioRespuesto()
+    );
+
     this.repository.save(impresoraToSave);
     return impresoraToSave;
   }
 
-  public Impresoras update(){
-    Impresoras impresorasToUpdate = new Impresoras();
-    this.repository.update(impresorasToUpdate);
-    return impresorasToUpdate;
+  public Impresoras update(UUID id, ImpresorasReqDto dto){
+    Optional<Impresoras> impresoraOnDb = this.repository.findById(id);
+    if(impresoraOnDb.isEmpty()){
+      throw new IllegalArgumentException("Impresora no encontrada");
+    }
+
+    Impresoras impresoraToUpdate = impresoraOnDb.orElse(new Impresoras());
+    impresoraToUpdate.merge(dto);
+
+    this.repository.update(impresoraToUpdate);
+    return impresoraToUpdate;
   }
 
-  
+  public String delete(UUID id){
+    Optional<Impresoras> impresoraOnDb = this.repository.findById(id);
+    if (impresoraOnDb.isEmpty()){
+      return "La impresora no existe";
+    }
+
+    this.repository.delete(id);
+    return  "La impresora fue eliminada con exito";
+  }
 }

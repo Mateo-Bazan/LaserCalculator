@@ -149,4 +149,23 @@ public class ImpresorasRepository{
       throw new RuntimeException("Error al obtener las impresoras: " + e.getMessage());
     }
   }
+
+  public boolean delete(UUID id){
+    String queryDelete = """
+      DELETE FROM impresoras 
+      WHERE id = ?
+    """;
+    try(
+      Connection conn = dbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(queryDelete);
+    ){
+      pstmt.setObject(1, id.toString());
+      int rowsAffected = pstmt.executeUpdate();
+
+      return rowsAffected > 0;
+    }catch(SQLException e){
+      throw new RuntimeException("Error al eliminar impresora");
+    }
+    
+  }
 }
