@@ -1,6 +1,5 @@
 package com.abgraphicdesing.controller;
 
-public class HistorialController{
-
+public class HistorialController {
   
 }
