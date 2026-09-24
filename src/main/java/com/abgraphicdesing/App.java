@@ -48,7 +48,7 @@ public class App extends Application{
       getClass().getResource("/css/styles.css").toExternalForm()
     );
 
-    primaryStage.setTitle("Ejemplo inicializador");
+    primaryStage.setTitle("AB Graphic Desing App");
     primaryStage.setScene(scene);
     primaryStage.show();
   }

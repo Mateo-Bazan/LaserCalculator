@@ -2,6 +2,8 @@ package com.abgraphicdesing.model.entity;
 
 import java.util.UUID;
 
+import com.abgraphicdesing.model.dto.ImpresorasReqDto;
+
 public class Impresoras {
   private UUID id;
   private UUID idTipo;
@@ -115,4 +117,24 @@ public class Impresoras {
   public void setAmortizacion(float precioCompra, float precioRepuesto, int vidaUtil){
     this.amortizacion = (precioCompra + precioRepuesto) / vidaUtil;
   }
+
+  public void merge(ImpresorasReqDto dto){
+    if(dto.idTipo() != null){ this.setIdTipo(dto.idTipo()); }
+    if(dto.marca() != null){ this.setMarca(dto.marca()); }
+    if(dto.modelo() != null){ this.setModelo(dto.modelo());}
+    if(dto.titulo() != null){ this.setTitulo(dto.titulo());}
+    if(dto.vidaUtil() > 0){ 
+      this.setVidaUtil(dto.vidaUtil());
+      this.setAmortizacion(this.precioCompra, this.precioRespuesto, dto.vidaUtil());
+    }
+    if(dto.watts() > 0){this.setWatts(dto.watts());}
+    if(dto.precioCompra() > 0){
+      this.setPrecioCompra(dto.precioCompra());
+      this.setAmortizacion(dto.precioCompra(), this.precioRespuesto, this.vidaUtil);
+    }
+    if(dto.precioRespuesto() > 0){
+      this.setPrecioRespuesto(dto.precioRespuesto());
+      this.setAmortizacion(this.precioCompra, dto.precioRespuesto(), this.vidaUtil);
+    }
+  };
 }

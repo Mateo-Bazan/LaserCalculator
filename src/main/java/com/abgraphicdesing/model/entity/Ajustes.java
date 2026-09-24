@@ -60,5 +60,5 @@ public class Ajustes {
     }
     this.idPeriodo = idPeriodo;
   }
-
+  
 }

@@ -8,6 +8,8 @@ import java.util.UUID;
 import com.abgraphicdesing.model.entity.Materiales;
 import com.abgraphicdesing.repository.MaterialesRepository;
 
+import javafx.scene.paint.Material;
+
 
 public class MaterialesService {
 
@@ -41,6 +43,10 @@ public class MaterialesService {
   }
 
   public boolean delete(UUID id) throws SQLException {
+    Optional<Materiales> existsMaterial = repository.findById(id);
+    if (existsMaterial.isEmpty()) {
+      return false;
+    }
     return repository.delete(id);
   }
 }

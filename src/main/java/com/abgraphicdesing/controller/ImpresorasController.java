@@ -41,7 +41,17 @@ public class ImpresorasController{
     );
   }
   
-  public void update(){}
+  public void update(
+    UUID id, ImpresorasReqDto dto,
+    Consumer<Impresoras> onSuccess,
+    Consumer<Throwable> onError
+  ){
+    AsyncExecutor.execute(
+      ()-> service.update(id, dto), 
+      onSuccess, 
+      onError
+    );
+  }
   
   public void getOne(
     UUID id,
@@ -57,5 +67,14 @@ public class ImpresorasController{
   
   public void getResume(){}
 
-  public void delete(String id){}
+  public void delete(
+    UUID id,
+    Consumer <String> onSuccess,
+    Consumer <Throwable> onError
+  ){
+    AsyncExecutor.execute(
+      () -> service.delete(id), 
+      onSuccess, 
+      onError);
+  }
 }
