@@ -1,6 +1,7 @@
 package com.abgraphicdesing.model.entity;
 
 import java.util.UUID;
+import com.abgraphicdesing.model.dto.MaterialesReqDto;;
 
 public class Materiales {
   private UUID id;
@@ -86,4 +87,13 @@ public class Materiales {
   public void setStock(int stock){
     this.stock = stock;
   }
+
+  public void merge(MaterialesReqDto dto){
+    if(dto.nombre() != null){ this.setNombre(dto.nombre()); }
+    if(dto.precioCompra() > 0){ this.setPrecioCompra(dto.precioCompra());}
+    if(dto.merma() > 0){ this.setMerma(dto.merma());}
+    setPrecioCosto(dto.precioCompra(), dto.merma());
+    if(dto.dimensiones() != null){ this.setDimensiones(dto.dimensiones()); }
+    if(dto.stock() > 0){ this.setStock(dto.stock()); }
+  };
 }

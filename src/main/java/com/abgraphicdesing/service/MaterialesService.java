@@ -1,5 +1,6 @@
 package com.abgraphicdesing.service;
 
+
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
@@ -7,8 +8,7 @@ import java.util.UUID;
 
 import com.abgraphicdesing.model.entity.Materiales;
 import com.abgraphicdesing.repository.MaterialesRepository;
-
-import javafx.scene.paint.Material;
+import com.abgraphicdesing.model.dto.MaterialesReqDto;
 
 
 public class MaterialesService {
@@ -19,34 +19,55 @@ public class MaterialesService {
     this.repository = repository;
   }
 
-  public List<Materiales> read() throws SQLException {
-    return repository.read();
+  public List<Materiales> getAll() throws SQLException {
+    List<Materiales> materialesList = this.repository.getAll();
+    if(materialesList.isEmpty()){
+      return null;
+    }
+    return materialesList;
   }
 
-  public Optional<Materiales> findById(UUID id) throws SQLException {
-    return repository.findById(id);
+  public Optional<Materiales> findById(UUID id) {
+    Optional<Materiales> material = this.repository.findById(id);
+    if(material.isEmpty()){
+      return null;
+    }
+    return material;
   }
 
-  public boolean create(Materiales m) throws SQLException {
-    if (m.getId() == null) {
-      m.setId();
+  public Materiales create(MaterialesReqDto dto) throws SQLException {
+    Materiales materialToSave = new Materiales(
+      dto.nombre(),
+      dto.precioCompra(),
+      dto.merma(),
+      dto.dimensiones(),
+      dto.stock()
+    );
+
+    this.repository.create(materialToSave);
+    return materialToSave; 
+  }
+
+  public Materiales update(UUID id, MaterialesReqDto dto) {
+    Optional<Materiales> materialOnDb = this.repository.findById(id);
+    if (materialOnDb.isEmpty()) {
+      throw new IllegalArgumentException("Material no encontrado");
     }
 
-    return repository.create(m); 
+    Materiales materialToUpdate = materialOnDb.orElse(new Materiales());
+    materialToUpdate.merge(dto);
+
+    this.repository.update(materialToUpdate);
+    return materialToUpdate;
   }
 
-  public boolean update(Materiales m) throws SQLException {
-    if (m.getId() == null) {
-      throw new IllegalArgumentException("No se puede actualizar un material sin id");
-    }
-    return repository.update(m);
-  }
-
-  public boolean delete(UUID id) throws SQLException {
-    Optional<Materiales> existsMaterial = repository.findById(id);
+  public String delete(UUID id) {
+    Optional<Materiales> existsMaterial = this.repository.findById(id);
     if (existsMaterial.isEmpty()) {
-      return false;
+      return "El material no existe";
     }
-    return repository.delete(id);
+
+    this.repository.delete(id);
+    return "El material se elimino";
   }
 }

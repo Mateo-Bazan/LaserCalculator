@@ -17,7 +17,7 @@ public class ImpresorasService{
 
   public Optional<Impresoras>  getOne(UUID id){
     Optional<Impresoras> impresora = this.repository.findById(id);
-    if(!impresora.isEmpty()){
+    if(impresora.isEmpty()){
       return null;
     }
     return impresora;
