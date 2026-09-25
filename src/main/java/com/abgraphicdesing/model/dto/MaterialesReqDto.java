@@ -7,5 +7,4 @@ public record MaterialesReqDto(
     int precioCosto,
     String dimensiones,
     int stock
-){
-}
+){}
