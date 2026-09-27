@@ -42,7 +42,7 @@
 
 .marcaContainerTitle{
   -fx-padding: 5;
-  -fx-alignment: left;
+  -fx-alignment: CENTER_LEFT;
 }
 
 .marcaTitle{

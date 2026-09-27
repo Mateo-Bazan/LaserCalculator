@@ -7,8 +7,8 @@ import java.util.UUID;
 
 import com.abgraphicdesing.controller.util.AsyncExecutor;
 import com.abgraphicdesing.model.dto.ImpresorasReqDto;
-import com.abgraphicdesing.model.entity.Impresoras;
 import com.abgraphicdesing.service.ImpresorasService;
+import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
 public class ImpresorasController{
   private final ImpresorasService service;
@@ -19,7 +19,7 @@ public class ImpresorasController{
 
   
   public void getAll(
-    Consumer <List<Impresoras>> onSuccess,
+    Consumer <List<ImpresorasResDto>> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -31,7 +31,7 @@ public class ImpresorasController{
   
   public void create(
     ImpresorasReqDto dto,
-    Consumer <Impresoras> onSuccess,
+    Consumer <ImpresorasResDto> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -43,7 +43,7 @@ public class ImpresorasController{
   
   public void update(
     UUID id, ImpresorasReqDto dto,
-    Consumer<Impresoras> onSuccess,
+    Consumer<ImpresorasResDto> onSuccess,
     Consumer<Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -55,7 +55,7 @@ public class ImpresorasController{
   
   public void getOne(
     UUID id,
-    Consumer <Optional<Impresoras>> onSuccess,
+    Consumer <Optional<ImpresorasResDto>> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(

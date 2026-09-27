@@ -29,7 +29,7 @@ public class ImpresorasRepository{
       PreparedStatement pstmt = conn.prepareStatement(querySaveImpresora)
     ){
       pstmt.setObject(1, impresora.getId().toString());
-      pstmt.setObject(2, impresora.getIdTipo().toString());
+      pstmt.setObject(2, impresora.getIdTipo());
       pstmt.setObject(3, impresora.getMarca());
       pstmt.setObject(4, impresora.getModelo());
       pstmt.setObject(5, impresora.getTitulo());
@@ -101,7 +101,7 @@ public class ImpresorasRepository{
       
       if(rs.next()){
         return Optional.of(new Impresoras(
-          rs.getObject("tipo_id", UUID.class),
+          rs.getInt("id_tipo"),
           rs.getString("marca"),
           rs.getString("modelo"),
           rs.getString("titulo"),
@@ -130,7 +130,7 @@ public class ImpresorasRepository{
       ResultSet rs = pstmt.executeQuery();
     ){
       while(rs.next()) {
-        UUID tipoId = rs.getObject("tipo_id", UUID.class);
+        int tipoId = rs.getInt("id_tipo");
         String marca = rs.getString("marca");
         String modelo = rs.getString("modelo");
         String titulo = rs.getString("titulo");
@@ -138,7 +138,7 @@ public class ImpresorasRepository{
         int watts = rs.getInt("watts");
         float precioCompra = rs.getFloat("precio_compra");
         float precioPresupuesto = rs.getFloat("precio_respuesto");
-        UUID id = rs.getObject("id", UUID.class);
+        UUID id = UUID.fromString(rs.getString("id"));
         
         Impresoras impresora = new Impresoras(tipoId, marca, modelo, titulo, vidaUtil, watts, precioCompra, precioPresupuesto, id);
         impresoras.add(impresora);

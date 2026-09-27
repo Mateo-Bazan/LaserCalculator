@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 import com.abgraphicdesing.model.entity.Impresoras;
 import com.abgraphicdesing.repository.ImpresorasRepository;
+import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
 public class ImpresorasService{
   private final ImpresorasRepository repository;
@@ -15,23 +16,23 @@ public class ImpresorasService{
     this.repository = repository;
   }
 
-  public Optional<Impresoras>  getOne(UUID id){
+  public Optional<ImpresorasResDto>  getOne(UUID id){
     Optional<Impresoras> impresora = this.repository.findById(id);
     if(!impresora.isEmpty()){
       return null;
     }
-    return impresora;
+    return impresora.map(ImpresorasResDto::new);
   }
 
-  public List<Impresoras> getAll(){
+  public List<ImpresorasResDto> getAll(){
     List<Impresoras> impresorasList = this.repository.getAll();
     if(impresorasList.isEmpty()){
       return null;
     }
-    return impresorasList;
+    return impresorasList.stream().map(ImpresorasResDto::new).toList();
   }
 
-  public Impresoras create(ImpresorasReqDto dto){
+  public ImpresorasResDto create(ImpresorasReqDto dto){
     Impresoras impresoraToSave = new Impresoras(
       dto.idTipo(),
       dto.marca(),
@@ -44,10 +45,10 @@ public class ImpresorasService{
     );
 
     this.repository.save(impresoraToSave);
-    return impresoraToSave;
+    return new ImpresorasResDto(impresoraToSave);
   }
 
-  public Impresoras update(UUID id, ImpresorasReqDto dto){
+  public ImpresorasResDto update(UUID id, ImpresorasReqDto dto){
     Optional<Impresoras> impresoraOnDb = this.repository.findById(id);
     if(impresoraOnDb.isEmpty()){
       throw new IllegalArgumentException("Impresora no encontrada");
@@ -57,7 +58,7 @@ public class ImpresorasService{
     impresoraToUpdate.merge(dto);
 
     this.repository.update(impresoraToUpdate);
-    return impresoraToUpdate;
+    return new ImpresorasResDto(impresoraToUpdate);
   }
 
   public String delete(UUID id){

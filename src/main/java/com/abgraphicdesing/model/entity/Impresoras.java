@@ -6,7 +6,7 @@ import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 
 public class Impresoras {
   private UUID id;
-  private UUID idTipo;
+  private int idTipo;
   private String marca;
   private String modelo;
   private String titulo;
@@ -18,7 +18,7 @@ public class Impresoras {
 
   public Impresoras(){ }
 
-  public Impresoras(UUID idTipo, String marca, String modelo, 
+  public Impresoras(int idTipo, String marca, String modelo, 
     String titulo, int vidaUtil, int watts, 
     float precioCompra, float precioRespuesto){
     this.setId();
@@ -34,7 +34,7 @@ public class Impresoras {
   }
 
   public Impresoras(
-    UUID idTipo, String marca, String modelo, 
+    int idTipo, String marca, String modelo, 
     String titulo, int vidaUtil, int watts, 
     float precioCompra, float precioRespuesto, UUID id
   ){
@@ -53,7 +53,7 @@ public class Impresoras {
   public UUID getId(){
     return id;
   }
-  public UUID getIdTipo(){
+  public int getIdTipo(){
     return idTipo;
   }
   public String getMarca(){
@@ -86,8 +86,8 @@ public class Impresoras {
     this.id = UUID.randomUUID();
   }
 
-  public void setIdTipo(UUID idTipo){
-    if(idTipo == null){
+  public void setIdTipo(int idTipo){
+    if(idTipo < 0){
       throw new RuntimeException("idTipo es totalmente necesaria");
     }
     this.idTipo = idTipo;
@@ -119,7 +119,7 @@ public class Impresoras {
   }
 
   public void merge(ImpresorasReqDto dto){
-    if(dto.idTipo() != null){ this.setIdTipo(dto.idTipo()); }
+    if(dto.idTipo() > 0){ this.setIdTipo(dto.idTipo()); }
     if(dto.marca() != null){ this.setMarca(dto.marca()); }
     if(dto.modelo() != null){ this.setModelo(dto.modelo());}
     if(dto.titulo() != null){ this.setTitulo(dto.titulo());}
