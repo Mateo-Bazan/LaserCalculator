@@ -6,7 +6,7 @@ import com.abgraphicdesing.model.entity.Impresoras;
 
 public record ImpresorasResDto(
   UUID id,
-  int idTipo,
+  String tipo,
   String marca,
   String modelo,
   String titulo,
@@ -19,7 +19,7 @@ public record ImpresorasResDto(
   public ImpresorasResDto(Impresoras impresora){
     this(
       impresora.getId(),
-      impresora.getIdTipo(),
+      impresora.getTipo().getTipo(),
       impresora.getMarca(),
       impresora.getModelo(),
       impresora.getTitulo(),

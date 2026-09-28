@@ -6,7 +6,7 @@ import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 
 public class Impresoras {
   private UUID id;
-  private int idTipo;
+  private Tipos tipo;
   private String marca;
   private String modelo;
   private String titulo;
@@ -18,11 +18,11 @@ public class Impresoras {
 
   public Impresoras(){ }
 
-  public Impresoras(int idTipo, String marca, String modelo, 
+  public Impresoras(Tipos tipo, String marca, String modelo, 
     String titulo, int vidaUtil, int watts, 
     float precioCompra, float precioRespuesto){
     this.setId();
-    this.setIdTipo(idTipo);
+    this.setTipo(tipo);
     this.setMarca(marca);
     this.setModelo(modelo);
     this.setTitulo(titulo);
@@ -34,11 +34,11 @@ public class Impresoras {
   }
 
   public Impresoras(
-    int idTipo, String marca, String modelo, 
+    Tipos tipo, String marca, String modelo, 
     String titulo, int vidaUtil, int watts, 
     float precioCompra, float precioRespuesto, UUID id
   ){
-    this.idTipo = idTipo;
+    this.tipo = tipo;
     this.marca = marca;
     this.modelo = modelo;
     this.titulo = titulo;
@@ -53,8 +53,8 @@ public class Impresoras {
   public UUID getId(){
     return id;
   }
-  public int getIdTipo(){
-    return idTipo;
+  public Tipos getTipo(){
+    return tipo;
   }
   public String getMarca(){
     return marca;
@@ -86,11 +86,11 @@ public class Impresoras {
     this.id = UUID.randomUUID();
   }
 
-  public void setIdTipo(int idTipo){
-    if(idTipo < 0){
-      throw new RuntimeException("idTipo es totalmente necesaria");
+  public void setTipo(Tipos tipo){
+    if(tipo == null){
+      throw new RuntimeException("tipo es obligatorio");
     }
-    this.idTipo = idTipo;
+    this.tipo = tipo;
   }
 
   public void setMarca(String marca){
@@ -119,7 +119,7 @@ public class Impresoras {
   }
 
   public void merge(ImpresorasReqDto dto){
-    if(dto.idTipo() > 0){ this.setIdTipo(dto.idTipo()); }
+    //if(dto.idTipo() > 0){ this.setTipo(dto.idTipo()); }
     if(dto.marca() != null){ this.setMarca(dto.marca()); }
     if(dto.modelo() != null){ this.setModelo(dto.modelo());}
     if(dto.titulo() != null){ this.setTitulo(dto.titulo());}

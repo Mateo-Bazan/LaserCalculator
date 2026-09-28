@@ -11,6 +11,7 @@ import java.util.UUID;
 
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.model.entity.Impresoras;
+import com.abgraphicdesing.model.entity.Tipos;
 
 public class ImpresorasRepository{
   private final DbConfig dbConfig;
@@ -29,7 +30,7 @@ public class ImpresorasRepository{
       PreparedStatement pstmt = conn.prepareStatement(querySaveImpresora)
     ){
       pstmt.setObject(1, impresora.getId().toString());
-      pstmt.setObject(2, impresora.getIdTipo());
+      pstmt.setObject(2, impresora.getTipo().getId());
       pstmt.setObject(3, impresora.getMarca());
       pstmt.setObject(4, impresora.getModelo());
       pstmt.setObject(5, impresora.getTitulo());
@@ -68,7 +69,7 @@ public class ImpresorasRepository{
       Connection conn = dbConfig.getConnection();
       PreparedStatement pstmt = conn.prepareStatement(queryUpdateImpresora)
     ){
-      pstmt.setObject(1, impresora.getIdTipo());
+      pstmt.setObject(1, impresora.getTipo().getTipo());
       pstmt.setObject(2, impresora.getMarca());
       pstmt.setObject(3, impresora.getModelo());
       pstmt.setObject(4, impresora.getTitulo());
@@ -89,8 +90,22 @@ public class ImpresorasRepository{
 
   public Optional<Impresoras> findById(UUID id){
     String queryGetOne = """
-      SELECT * FROM impresoras
-      WHERE id = ?
+      SELECT 
+        i.id,
+        i.id_tipo,
+        t.tipo,
+        i.marca,
+        i.modelo,
+        i.titulo,
+        i.vida_util,
+        i.watts,
+        i.precio_compra,
+        i.precio_respuesto,
+        i.amortizacion
+      FROM impresoras i
+      JOIN tipo t
+        ON t.id = i.id_tipo
+      WHERE i.id = ?
     """;
     try(
       Connection conn = dbConfig.getConnection();
@@ -100,8 +115,12 @@ public class ImpresorasRepository{
       ResultSet rs = pstmt.executeQuery();
       
       if(rs.next()){
-        return Optional.of(new Impresoras(
+        Tipos tipo = new Tipos(
           rs.getInt("id_tipo"),
+          rs.getString("tipo")
+        );
+        return Optional.of(new Impresoras(
+          tipo,
           rs.getString("marca"),
           rs.getString("modelo"),
           rs.getString("titulo"),
@@ -121,7 +140,21 @@ public class ImpresorasRepository{
 
   public List<Impresoras> getAll(){
     String queryGetAll = """
-      SELECT * FROM impresoras
+      SELECT 
+        i.id,
+        i.id_tipo,
+        t.tipo,
+        i.marca,
+        i.modelo,
+        i.titulo,
+        i.vida_util,
+        i.watts,
+        i.precio_compra,
+        i.precio_respuesto,
+        i.amortizacion
+      FROM impresoras i
+      JOIN tipo t
+        ON t.id = i.id_tipo
     """;
     List<Impresoras> impresoras = new ArrayList<>();
     try(
@@ -130,7 +163,10 @@ public class ImpresorasRepository{
       ResultSet rs = pstmt.executeQuery();
     ){
       while(rs.next()) {
-        int tipoId = rs.getInt("id_tipo");
+        Tipos tipo = new Tipos(
+          rs.getInt("id_tipo"),
+          rs.getString("tipo")
+        );
         String marca = rs.getString("marca");
         String modelo = rs.getString("modelo");
         String titulo = rs.getString("titulo");
@@ -140,7 +176,7 @@ public class ImpresorasRepository{
         float precioPresupuesto = rs.getFloat("precio_respuesto");
         UUID id = UUID.fromString(rs.getString("id"));
         
-        Impresoras impresora = new Impresoras(tipoId, marca, modelo, titulo, vidaUtil, watts, precioCompra, precioPresupuesto, id);
+        Impresoras impresora = new Impresoras(tipo, marca, modelo, titulo, vidaUtil, watts, precioCompra, precioPresupuesto, id);
         impresoras.add(impresora);
       }
       return impresoras;

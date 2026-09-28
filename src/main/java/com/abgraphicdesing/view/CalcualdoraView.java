@@ -1,7 +1,7 @@
 package com.abgraphicdesing.view;
 
 import com.abgraphicdesing.controller.ImpresorasController;
-import com.abgraphicdesing.view.ui.ImpresorasCard;
+import com.abgraphicdesing.view.ui.ImpresorasResumeCard;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
 import javafx.geometry.Pos;
@@ -36,8 +36,7 @@ public class CalcualdoraView extends HBox{
       impresoras ->{
         if(impresoras != null && !impresoras.isEmpty()){
           for(ImpresorasResDto impresora : impresoras){
-            ImpresorasCard card = new ImpresorasCard(impresora);
-  
+            ImpresorasResumeCard card = new ImpresorasResumeCard(impresora);
             container.getChildren().add(card);
           }
         }else{
@@ -49,5 +48,4 @@ public class CalcualdoraView extends HBox{
         System.out.println("Error cargando impresoras: " + error.getMessage());
       });
   }
-
 }

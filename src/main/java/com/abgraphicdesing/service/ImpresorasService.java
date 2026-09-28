@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 import com.abgraphicdesing.model.entity.Impresoras;
+import com.abgraphicdesing.model.entity.Tipos;
 import com.abgraphicdesing.repository.ImpresorasRepository;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
@@ -33,8 +34,10 @@ public class ImpresorasService{
   }
 
   public ImpresorasResDto create(ImpresorasReqDto dto){
+    Tipos newTipo = new Tipos(dto.idTipo(), null);
+
     Impresoras impresoraToSave = new Impresoras(
-      dto.idTipo(),
+      newTipo,
       dto.marca(),
       dto.modelo(),
       dto.titulo(),

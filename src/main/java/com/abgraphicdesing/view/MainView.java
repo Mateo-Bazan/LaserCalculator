@@ -14,8 +14,13 @@ public class MainView extends BorderPane{
     setTop(navigationBar);
 
 
-    navigationBar.setOnImpresora(
+    navigationBar.setOnCalculadora(
       () -> setCenter(new CalcualdoraView(impresoraController))
     );
+
+    navigationBar.setOnImpresora(
+      () -> setCenter(new ImpresorasView(impresoraController))
+    );
+    
   }
 }
