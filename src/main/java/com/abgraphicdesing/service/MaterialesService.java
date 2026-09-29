@@ -22,7 +22,7 @@ public class MaterialesService {
   public List<Materiales> getAll() throws SQLException {
     List<Materiales> materialesList = this.repository.getAll();
     if(materialesList.isEmpty()){
-      return null;
+      return materialesList;
     }
     return materialesList;
   }
@@ -30,7 +30,7 @@ public class MaterialesService {
   public Optional<Materiales> findById(UUID id) {
     Optional<Materiales> material = this.repository.findById(id);
     if(material.isEmpty()){
-      return null;
+      return material;
     }
     return material;
   }
@@ -43,6 +43,7 @@ public class MaterialesService {
       dto.dimensiones(),
       dto.stock()
     );
+    materialToSave.setId();
 
     this.repository.create(materialToSave);
     return materialToSave; 

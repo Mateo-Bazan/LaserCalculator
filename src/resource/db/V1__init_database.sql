@@ -24,7 +24,7 @@ create table if not exists impresoras(
 );
 
 create table if not exists materiales(
-    id integer primary key not null,
+    id text primary key not null,
     nombre text,
     precio_compra integer,
     merma integer,
