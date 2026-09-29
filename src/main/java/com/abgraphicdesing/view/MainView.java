@@ -10,7 +10,7 @@ public class MainView extends BorderPane{
 
 
     navigationBar.setOnImpresora(
-      () -> setCenter(new ImpresorasView())
+      () -> setCenter(new CalcualdoraView())
     );
 
   }

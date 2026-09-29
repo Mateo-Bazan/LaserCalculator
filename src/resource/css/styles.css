@@ -21,3 +21,54 @@
   -fx-text-fill: blue;
   -fx-cursor: hand;
 }
+
+.imprCardContainer{
+  -fx-padding: 0 0 15 10;
+}
+
+.leftSideTitle{
+  -fx-font-weight: bold;
+  -fx-font-size: 17px;
+  -fx-padding: 15 0 15 0;
+}
+
+.dataContainerCard{
+  -fx-font-size: 13px;
+  -fx-background-color: rgb(255, 255, 255);
+  -fx-border-radius: 15;
+  -fx-background-radius: 15;
+  -fx-padding: 5;
+}
+
+.marcaContainerTitle{
+  -fx-padding: 5;
+  -fx-alignment: left;
+}
+
+.marcaTitle{
+  -fx-padding: 3;
+  -fx-text-fill: #233dff;
+  -fx-background-color: #c3c9f9;
+  -fx-border-color: #233dff;
+  -fx-border-radius: 5;
+  -fx-background-radius: 5;
+  -fx-font-weight: bold;
+}
+
+.modeloTitle{
+  -fx-padding: 2;
+  -fx-font-weight: bold;
+  -fx-font-size: 13px;
+}
+
+.presentationLabel{
+  -fx-padding: 2;
+  -fx-text-fill: gray;
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+}
+
+.dataLabel{
+  -fx-font-weight: bold;
+  -fx-font-size: 13px;
+}
