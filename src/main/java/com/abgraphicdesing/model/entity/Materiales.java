@@ -92,7 +92,7 @@ public class Materiales {
     if(dto.nombre() != null){ this.setNombre(dto.nombre()); }
     if(dto.precioCompra() > 0){ this.setPrecioCompra(dto.precioCompra());}
     if(dto.merma() > 0){ this.setMerma(dto.merma());}
-    setPrecioCosto(dto.precioCompra(), dto.merma());
+    setPrecioCosto(this.precioCompra, this.merma);
     if(dto.dimensiones() != null){ this.setDimensiones(dto.dimensiones()); }
     if(dto.stock() > 0){ this.setStock(dto.stock()); }
   };
