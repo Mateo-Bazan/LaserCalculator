@@ -19,7 +19,7 @@ public class ImpresorasService{
 
   public Optional<ImpresorasResDto>  getOne(UUID id){
     Optional<Impresoras> impresora = this.repository.findById(id);
-    if(!impresora.isEmpty()){
+    if(impresora.isEmpty()){
       return null;
     }
     return impresora.map(ImpresorasResDto::new);

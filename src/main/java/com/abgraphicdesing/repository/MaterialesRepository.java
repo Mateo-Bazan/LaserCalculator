@@ -20,7 +20,7 @@ public class MaterialesRepository {
     this.dbConfig = dbConfig;
   }
 
-  public List<Materiales> read(){
+  public List<Materiales> getAll(){
     String sql = "SELECT id, nombre, precio_compra, merma, precio_costo, dimensiones, stock FROM materiales ORDER BY nombre";
 
     List<Materiales> listaMateriales = new ArrayList<>();
@@ -109,13 +109,14 @@ public class MaterialesRepository {
   }
 
   
-  public boolean delete(UUID id) throws SQLException {
+  public String delete(UUID id){
     String sql = "DELETE FROM materiales WHERE id = ?";
 
     try (Connection conn = dbConfig.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
 
       ps.setString(1, id.toString());
-      return ps.executeUpdate() > 0;
+      ps.executeUpdate();
+      return "Todo ok";
     }
     catch(SQLException err){
       System.err.println("Error al eliminar Material: " + err.getMessage());
