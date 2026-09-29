@@ -5,9 +5,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.abgraphicdesing.controller.ImpresorasController;
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.database.InitializerDatabase;
+import com.abgraphicdesing.repository.ImpresorasRepository;
+import com.abgraphicdesing.service.ImpresorasService;
 import com.abgraphicdesing.view.MainView;
+import com.abgraphicdesing.scripts.SeederScript;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -17,7 +21,10 @@ public class App extends Application{
   public static void main( String[] args ){
     DbConfig dbConfig = new DbConfig();
     InitializerDatabase initializer = new InitializerDatabase(dbConfig);
-    
+
+    // SeederScript seederExe = new SeederScript(dbConfig);
+    // seederExe.update();
+
     try{
       initializer.initializer();
     } catch(Exception e){
@@ -40,8 +47,14 @@ public class App extends Application{
 
   @Override
   public void start(Stage primaryStage){
-    MainView mainView = new MainView();
+    DbConfig configDb = new DbConfig();
+    ImpresorasRepository impRepository = new ImpresorasRepository(configDb);
+    ImpresorasService impService = new ImpresorasService(impRepository);
+    ImpresorasController impController = new ImpresorasController(impService);
+
+    MainView mainView = new MainView(impController);
     Scene scene = new Scene(mainView, 1200, 800);
+
 
     scene.getStylesheets().clear();
     scene.getStylesheets().add(

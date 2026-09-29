@@ -1,6 +1,8 @@
 package com.abgraphicdesing.view;
 
-import com.abgraphicdesing.view.ui.ImpresorasCard;
+import com.abgraphicdesing.controller.ImpresorasController;
+import com.abgraphicdesing.view.ui.ImpresorasResumeCard;
+import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -8,15 +10,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 
 public class CalcualdoraView extends HBox{
-  public CalcualdoraView(){  
+  private final ImpresorasController controller;
+
+  public CalcualdoraView(ImpresorasController controller){  
+    this.controller = controller;
     VBox leftSide = new VBox();
     Label impresorasTitulos = new Label("Impresoras");
 
-    ImpresorasCard imprCard = new ImpresorasCard();
 
     leftSide.getChildren().addAll(
-      impresorasTitulos, 
-      imprCard
+      impresorasTitulos 
     );
 
     impresorasTitulos.getStyleClass().add("leftSideTitle");
@@ -25,6 +28,24 @@ public class CalcualdoraView extends HBox{
     leftSide.getStyleClass().add("imprCardContainer");
 
     getChildren().addAll(leftSide);
+    cargarImpresoras(leftSide);
+  }
 
+  private void cargarImpresoras(VBox container){
+    controller.getAll(
+      impresoras ->{
+        if(impresoras != null && !impresoras.isEmpty()){
+          for(ImpresorasResDto impresora : impresoras){
+            ImpresorasResumeCard card = new ImpresorasResumeCard(impresora);
+            container.getChildren().add(card);
+          }
+        }else{
+          Label label = new Label("No hay impresoras");
+          container.getChildren().add(label);
+        }
+      }, 
+      error ->{
+        System.out.println("Error cargando impresoras: " + error.getMessage());
+      });
   }
 }

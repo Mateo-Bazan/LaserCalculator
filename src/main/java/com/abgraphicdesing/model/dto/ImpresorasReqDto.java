@@ -1,9 +1,8 @@
 package com.abgraphicdesing.model.dto;
 
-import java.util.UUID;
 
 public record ImpresorasReqDto(
-  UUID idTipo,
+  int idTipo,
   String marca,
   String modelo,
   String titulo,

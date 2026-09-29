@@ -1,5 +1,6 @@
 package com.abgraphicdesing.view.ui;
 
+
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -7,9 +8,12 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
+import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
-public class ImpresorasCard extends VBox{
-  public ImpresorasCard(){
+public class ImpresorasResumeCard extends VBox{
+  public ImpresorasResumeCard(ImpresorasResDto data){
+    setPrefHeight(150);
+    setPrefWidth(250);
     VBox cardContainer = new VBox(8);
 
     HBox marcaContainer = new HBox();
@@ -23,13 +27,12 @@ public class ImpresorasCard extends VBox{
     Region spacingCosto = new Region();
     HBox.setHgrow(spacingCosto, Priority.ALWAYS);
 
-    Label marca = new Label("Marca que llega");
-    Label modelo = new Label("Modelo");
+    Label marca = new Label(data.marca());
+    Label modelo = new Label(data.modelo());
     Label impresoraTipo = new Label("tipo: ");
-    Label impresoraTipoGet = new Label("Tipo que llega");
-    
+    Label impresoraTipoGet = new Label(String.valueOf(data.tipo())); 
     Label costoHora = new Label("Costo hora: ");
-    Label costoHoraGet = new Label("Costo por hora en la db");
+    Label costoHoraGet = new Label(String.valueOf(data.precioCompra())); //nos falto calcular el precio de costo jeje
 
     rowImpresoraTipo.setSpacing(10);
     rowCostoHora.setSpacing(10);
