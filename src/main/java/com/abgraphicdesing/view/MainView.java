@@ -1,13 +1,17 @@
 package com.abgraphicdesing.view;
 
 import com.abgraphicdesing.controller.ImpresorasController;
+import com.abgraphicdesing.controller.MaterialesController;
 
 import javafx.scene.layout.BorderPane;
 
 public class MainView extends BorderPane{
   private final ImpresorasController impresoraController;
-  public MainView(ImpresorasController controller){
+  private final MaterialesController materialesController;
+
+  public MainView(ImpresorasController controller, MaterialesController materialController){
     this.impresoraController = controller;
+    this.materialesController = materialController;
 
     NavigationBar navigationBar = new NavigationBar();
 
@@ -20,6 +24,10 @@ public class MainView extends BorderPane{
 
     navigationBar.setOnImpresora(
       () -> setCenter(new ImpresorasView(impresoraController))
+    );
+
+    navigationBar.setOnMateriales(
+      () -> setCenter(new MaterialesView(materialesController))
     );
     
   }
