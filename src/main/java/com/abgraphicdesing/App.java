@@ -13,6 +13,10 @@ import com.abgraphicdesing.service.ImpresorasService;
 import com.abgraphicdesing.view.MainView;
 import com.abgraphicdesing.scripts.SeederScript;
 
+import com.abgraphicdesing.controller.MaterialesController;
+import com.abgraphicdesing.service.MaterialesService;
+import com.abgraphicdesing.repository.MaterialesRepository;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
@@ -52,7 +56,13 @@ public class App extends Application{
     ImpresorasService impService = new ImpresorasService(impRepository);
     ImpresorasController impController = new ImpresorasController(impService);
 
-    MainView mainView = new MainView(impController);
+    MaterialesRepository matRepository = new MaterialesRepository(configDb);
+    MaterialesService matService = new MaterialesService(matRepository);
+    MaterialesController matController = new MaterialesController(matService);
+
+
+
+    MainView mainView = new MainView(impController, matController);
     Scene scene = new Scene(mainView, 1200, 800);
 
 
