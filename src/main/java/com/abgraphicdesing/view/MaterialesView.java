@@ -55,10 +55,7 @@ public class MaterialesView extends VBox {
     TableColumn<Materiales, Integer> colStock = new TableColumn<>("Stock");
     colStock.setCellValueFactory(new PropertyValueFactory<>("stock"));
 
-    tabla.getColumns().addAll(
-      colNombre, colPrecioCompra, colMerma,
-      colPrecioCosto, colDimensiones, colStock
-    );
+    tabla.getColumns().addAll( colNombre, colPrecioCompra, colMerma, colPrecioCosto, colDimensiones, colStock );
 
     tabla.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
   }

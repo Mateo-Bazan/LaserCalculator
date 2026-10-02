@@ -22,8 +22,8 @@ public class Periodos {
     return this.periodo;
   }
 
-  public void setId(UUID id){
-    this.id = id;
+  public void setId(){
+    this.id = UUID.randomUUID();
   }
   public void setPeriodo(String periodo){
     this.periodo = periodo;

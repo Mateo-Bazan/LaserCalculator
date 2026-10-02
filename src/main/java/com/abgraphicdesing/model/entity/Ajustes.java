@@ -45,8 +45,8 @@ public class Ajustes {
     return this.idPeriodo; 
   }
 
-  public void setId(UUID id){
-    this.id = id;
+  public void setId(){
+    this.id = UUID.randomUUID();
   }
   public void setNombre(String nombre){
     this.nombre = nombre;

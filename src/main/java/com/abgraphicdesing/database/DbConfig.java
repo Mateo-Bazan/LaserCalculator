@@ -17,7 +17,7 @@ public class DbConfig {
     config.setMaximumPoolSize(5);
     config.setMinimumIdle(1);
 
-    config.addDataSourceProperty("foreing_key", "true");
+    config.addDataSourceProperty("foreing_keys", "true");
     dataSource = new HikariDataSource(config);
   }
 
