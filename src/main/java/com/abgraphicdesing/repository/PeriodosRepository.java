@@ -6,7 +6,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.model.entity.Periodos;
@@ -19,13 +18,13 @@ public class PeriodosRepository{
   }
 
   public List<Periodos> getAll() {
-    String sql = "Select * FROM periodos";
+    String sql = "Select * FROM periodo";
     List<Periodos> listaPeriodos = new ArrayList<>();
 
     try(Connection conn = dbConfig.getConnection(); PreparedStatement ps = conn.prepareStatement(sql); ResultSet rs = ps.executeQuery()){
       while(rs.next()) {
         listaPeriodos.add(new Periodos(
-          UUID.fromString(rs.getString("id")),
+          rs.getInt("id"),
           rs.getString("periodo")
         ));
       }

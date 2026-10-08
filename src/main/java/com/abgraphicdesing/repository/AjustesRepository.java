@@ -7,7 +7,6 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.model.entity.Ajustes;
@@ -20,7 +19,12 @@ public class AjustesRepository {
   }
 
   public List<Ajustes> getAll(){
-    String sql = "SELECT * FROM ajustes ORDER BY nombre";
+    String sql = """
+      SELECT A.*, B.periodo 
+      FROM ajustes AS A 
+      JOIN periodo AS B 
+      ON A.id_periodo = B.id 
+      ORDER BY nombre """;
 
     List<Ajustes> listaAjustes = new ArrayList<>();
 
@@ -29,8 +33,9 @@ public class AjustesRepository {
         listaAjustes.add(new Ajustes(
             rs.getString("nombre"),
             rs.getInt("gasto"),
-            UUID.fromString(rs.getString("idPeriodo")),
-            UUID.fromString(rs.getString("id"))
+            rs.getInt("id_periodo"),
+            rs.getString("periodo"),
+            rs.getInt("id")
         ));
       }
       return listaAjustes;
@@ -41,19 +46,25 @@ public class AjustesRepository {
     }
   }
 
-  public Optional<Ajustes> findById(UUID id){
-    String sql = "SELECT * FROM ajustes WHERE id = ?";
-
+  public Optional<Ajustes> findById(int id){
+    String sql = """
+      SELECT A.*, B.periodo
+      FROM ajustes AS A
+      JOIN periodo AS B ON A.id_periodo = B.id
+      WHERE A.id = ?
+      """;
+    
     try (Connection conn = dbConfig.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setString(1, id.toString()); // UUID a estring
+      ps.setInt(1, id);
 
       try (ResultSet rs = ps.executeQuery()) {
         if (rs.next()) {
           return Optional.of(new Ajustes(
             rs.getString("nombre"),
             rs.getInt("gasto"),
-            UUID.fromString(rs.getString("idPeriodo")),
-            UUID.fromString(rs.getString("id"))
+            rs.getInt("id_periodo"),
+            rs.getString("periodo"),
+            rs.getInt("id")
           ));
         }
         return Optional.empty();
@@ -66,22 +77,54 @@ public class AjustesRepository {
   }
 
   public boolean create(Ajustes a){
-    String sql = "INSERT INTO ajustes (id, nombre, gasto, id_periodo) VALUES (?, ?, ?, ?)";
+    String sql = "INSERT INTO ajustes (nombre, gasto, id_periodo) VALUES (?, ?, ?)";
 
-    try (Connection conn = dbConfig.getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
-
-      ps.setString(1, m.getId().toString());
-      ps.setString(2, m.getNombre());
-      ps.setInt(3, m.getPrecioCompra());
-      ps.setInt(4, m.getMerma());
-      ps.setInt(5, m.getPrecioCosto());
-      ps.setString(6, m.getDimensiones());
-      ps.setInt(7, m.getStock());
+    try (
+      Connection conn = dbConfig.getConnection(); 
+      PreparedStatement ps = conn.prepareStatement(sql)
+    ) {
+      ps.setString(1, a.getNombre());
+      ps.setInt(2, a.getGasto());
+      ps.setInt(3, a.getIdPeriodo());
       return ps.executeUpdate() > 0;
     }
     catch(SQLException err){
-      System.err.println("Error al crear Material: " + err.getMessage());
+      System.err.println("Error al crear Ajuste: " + err.getMessage());
       throw new RuntimeException();
+    }
+  }
+
+  public boolean update(Ajustes a){
+    String sql = "UPDATE ajustes SET nombre = ?, gasto = ?, id_periodo = ? WHERE id = ?";
+
+    try(
+      Connection conn = dbConfig.getConnection();
+      PreparedStatement ps = conn.prepareStatement(sql)
+    ){
+      ps.setString(1, a.getNombre());
+      ps.setInt(2, a.getGasto());
+      ps.setInt(3, a.getIdPeriodo());
+      ps.setInt(4, a.getId());
+
+      return ps.executeUpdate() > 0;
+
+    } catch (SQLException e) {
+      System.err.println("Error al actualizar Ajustes: " + e.getMessage());
+      throw new RuntimeException("Error al actualizar Ajustes: " + e.getMessage());
+    }
+  }
+
+  public boolean delete(int id){
+    String sql = " DELETE FROM ajustes WHERE id = ?";
+    try(
+      Connection conn = dbConfig.getConnection();
+      PreparedStatement pstmt = conn.prepareStatement(sql);
+    ){
+      pstmt.setInt(1, id);
+      return pstmt.executeUpdate() > 0;
+    }catch(SQLException e){
+      System.err.println("Error al eliminar Ajustes: " + e.getMessage());
+      throw new RuntimeException("Error al eliminar Ajustes: " + e.getMessage());
     }
   }
 }
