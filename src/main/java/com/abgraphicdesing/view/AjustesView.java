@@ -1,12 +1,11 @@
 package com.abgraphicdesing.view;
 
 import java.text.NumberFormat;
-import java.util.List;
 import java.util.Locale;
 
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.PeriodosController;
-import com.abgraphicdesing.model.entity.Ajustes;
+import com.abgraphicdesing.model.dto.AjustesResDto;
 import com.abgraphicdesing.view.ui.AjustesFormDialog;
 
 import javafx.geometry.Insets;
@@ -27,7 +26,7 @@ public class AjustesView extends VBox {
 
   private final AjustesController controller;
   private final PeriodosController periodosController;
-  private final ListView<Ajustes> listView = new ListView<>();
+  private final ListView<AjustesResDto> listView = new ListView<>();
 
   private final Button btnAgregar = new Button("Agregar");
   private final Button btnEditar = new Button("Editar");
@@ -70,11 +69,11 @@ public class AjustesView extends VBox {
 
   private void configurarLista() {
     NumberFormat moneda = NumberFormat.getCurrencyInstance(Locale.of("es", "AR"));
-    moneda.setMaximumFractionDigits(0); // gasto es int: sin decimales
+    moneda.setMaximumFractionDigits(0);
 
     listView.setCellFactory(lv -> new ListCell<>() {
       @Override
-      protected void updateItem(Ajustes item, boolean empty) {
+      protected void updateItem(AjustesResDto item, boolean empty) {
         super.updateItem(item, empty);
 
         if (empty || item == null) {
@@ -82,9 +81,9 @@ public class AjustesView extends VBox {
           return;
         }
 
-        Label nombre = new Label(item.getNombre());
-        Label costo = new Label(moneda.format(item.getGasto()));
-        Label periodo = new Label(item.getPeriodo());
+        Label nombre = new Label(item.nombre());
+        Label costo = new Label(moneda.format(item.gasto()));
+        Label periodo = new Label(item.periodo());
 
         Region espaciador = new Region();
         HBox.setHgrow(espaciador, Priority.ALWAYS);
@@ -120,39 +119,38 @@ public class AjustesView extends VBox {
   }
 
   private void onEditar() {
-    Ajustes seleccionado = listView.getSelectionModel().getSelectedItem();
+    AjustesResDto seleccionado = listView.getSelectionModel().getSelectedItem();
     if (seleccionado == null) return;
 
     periodosController.getAll(
       periodos -> new AjustesFormDialog(periodos, seleccionado)
         .showAndWait()
         .ifPresent(dto -> controller.update(
-          seleccionado.getId(),
+          seleccionado.id(),
           dto,
           ok -> cargarAjustes(),
           err -> mostrarError("No se pudo actualizar", err)
-          )),
+        )),
       err -> mostrarError("No se pudieron cargar los periodos", err)
     );
   }
 
+
   private void onEliminar() {
-    Ajustes seleccionado = listView.getSelectionModel().getSelectedItem();
+    AjustesResDto seleccionado = listView.getSelectionModel().getSelectedItem();
     if (seleccionado == null) return;
 
     Alert confirmar = new Alert(
       AlertType.CONFIRMATION,
-      "¿Eliminar \"" + seleccionado.getNombre() + "\"?",
+      "¿Eliminar \"" + seleccionado.nombre() + "\"?",
       ButtonType.OK, ButtonType.CANCEL
     );
 
     confirmar.showAndWait()
       .filter(r -> r == ButtonType.OK)
       .ifPresent(r -> controller.delete(
-        seleccionado.getId(),
-        msg -> {
-          System.out.println("Borrando: " + seleccionado.getId());
-          cargarAjustes();},
+        seleccionado.id(),
+        msg -> cargarAjustes(),
         err -> mostrarError("No se pudo eliminar", err)
       ));
   }

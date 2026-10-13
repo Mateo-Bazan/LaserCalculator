@@ -3,7 +3,7 @@ package com.abgraphicdesing.view.ui;
 import java.util.List;
 
 import com.abgraphicdesing.model.dto.AjustesReqDto;
-import com.abgraphicdesing.model.entity.Ajustes;
+import com.abgraphicdesing.model.dto.AjustesResDto;
 import com.abgraphicdesing.model.entity.Periodos;
 
 import javafx.beans.binding.Bindings;
@@ -26,7 +26,7 @@ public class AjustesFormDialog extends Dialog<AjustesReqDto> {
   private final ComboBox<Periodos> cbPeriodo = new ComboBox<>();
 
   // existente == null -> modo Agregar; existente != null -> modo Editar
-  public AjustesFormDialog(List<Periodos> periodos, Ajustes existente) {
+  public AjustesFormDialog(List<Periodos> periodos, AjustesResDto existente) {
     setTitle(existente == null ? "Agregar ajuste" : "Editar ajuste");
 
     ButtonType guardar = new ButtonType("Guardar", ButtonData.OK_DONE);
@@ -73,12 +73,12 @@ public class AjustesFormDialog extends Dialog<AjustesReqDto> {
     });
   }
 
-  private void precargar(List<Periodos> periodos, Ajustes existente) {
+  private void precargar(List<Periodos> periodos, AjustesResDto existente) {
     if (existente == null) return;
-    txtNombre.setText(existente.getNombre());
-    txtGasto.setText(String.valueOf(existente.getGasto()));
+    txtNombre.setText(existente.nombre());
+    txtGasto.setText(String.valueOf(existente.gasto()));
     periodos.stream()
-      .filter(p -> p.getId() == existente.getIdPeriodo())
+      .filter(p -> p.getId() == existente.idPeriodo())
       .findFirst()
       .ifPresent(cbPeriodo::setValue);
   }
