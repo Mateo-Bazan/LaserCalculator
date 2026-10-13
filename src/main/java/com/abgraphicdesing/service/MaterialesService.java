@@ -9,6 +9,7 @@ import java.util.UUID;
 import com.abgraphicdesing.model.entity.Materiales;
 import com.abgraphicdesing.repository.MaterialesRepository;
 import com.abgraphicdesing.model.dto.MaterialesReqDto;
+import com.abgraphicdesing.model.dto.MaterialesResDto;
 
 
 public class MaterialesService {
@@ -19,23 +20,23 @@ public class MaterialesService {
     this.repository = repository;
   }
 
-  public List<Materiales> getAll() throws SQLException {
-    List<Materiales> materialesList = this.repository.getAll();
+  public List<MaterialesResDto> getAll() throws SQLException {
+    List<MaterialesResDto> materialesList = this.repository.getAll().stream().map(MaterialesResDto::new).toList();
     if(materialesList.isEmpty()){
-      return materialesList;
+      return null;
     }
     return materialesList;
   }
 
-  public Optional<Materiales> findById(UUID id) {
-    Optional<Materiales> material = this.repository.findById(id);
+  public Optional<MaterialesResDto> findById(UUID id) {
+    Optional<MaterialesResDto> material = this.repository.findById(id).map(MaterialesResDto::new);
     if(material.isEmpty()){
-      return material;
+      return null;
     }
     return material;
   }
 
-  public Materiales create(MaterialesReqDto dto) throws SQLException {
+  public MaterialesResDto create(MaterialesReqDto dto) throws SQLException {
     Materiales materialToSave = new Materiales(
       dto.nombre(),
       dto.precioCompra(),
@@ -46,10 +47,10 @@ public class MaterialesService {
     materialToSave.setId();
 
     this.repository.create(materialToSave);
-    return materialToSave; 
+    return new MaterialesResDto(materialToSave); 
   }
 
-  public Materiales update(UUID id, MaterialesReqDto dto) {
+  public MaterialesResDto update(UUID id, MaterialesReqDto dto) {
     Optional<Materiales> materialOnDb = this.repository.findById(id);
     if (materialOnDb.isEmpty()) {
       throw new IllegalArgumentException("Material no encontrado");
@@ -59,7 +60,7 @@ public class MaterialesService {
     materialToUpdate.merge(dto);
 
     this.repository.update(materialToUpdate);
-    return materialToUpdate;
+    return new MaterialesResDto(materialToUpdate);
   }
 
   public String delete(UUID id) {
