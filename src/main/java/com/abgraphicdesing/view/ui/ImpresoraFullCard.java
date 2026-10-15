@@ -9,8 +9,16 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
+import java.util.function.Consumer;
+import javafx.scene.control.Button;
+import javafx.scene.layout.Region;
+
 public class ImpresoraFullCard extends VBox{
-  public ImpresoraFullCard(ImpresorasResDto dto){
+  public ImpresoraFullCard(
+  ImpresorasResDto dto,
+  Consumer<ImpresorasResDto> onEditar,
+  Consumer<ImpresorasResDto> onEliminar
+  ){
 
   
     StackPane cardContainer = new StackPane();
@@ -117,6 +125,25 @@ public class ImpresoraFullCard extends VBox{
     cardContainer.getStyleClass().add("impresoraFullCard");
     cardContainer.getChildren().addAll(contentContainer, marca);
     StackPane.setAlignment(marca, Pos.TOP_LEFT);
+    
+    //Botones de editar y eliminar
+    Button btnEditar = new Button("✎");
+    Button btnEliminar = new Button("✕");
+    btnEditar.getStyleClass().addAll("cardActionButton", "cardEditButton");
+    btnEliminar.getStyleClass().addAll("cardActionButton", "cardDeleteButton");
+
+    btnEditar.setOnAction(e -> onEditar.accept(dto));
+    btnEliminar.setOnAction(e -> onEliminar.accept(dto));
+
+    HBox acciones = new HBox(4, btnEditar, btnEliminar);
+    acciones.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE); // que no ocupe toda la tarjeta
+    acciones.visibleProperty().bind(cardContainer.hoverProperty());
+
+    cardContainer.getChildren().add(acciones); // al final, para que quede por encima
+    StackPane.setAlignment(acciones, Pos.TOP_RIGHT);
+    StackPane.setMargin(acciones, new Insets(6));
+    //Botones de editar y eliminar
+
     getChildren().add(
       cardContainer
     );

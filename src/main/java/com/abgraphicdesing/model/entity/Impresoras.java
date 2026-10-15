@@ -119,7 +119,12 @@ public class Impresoras {
   }
 
   public void merge(ImpresorasReqDto dto){
-    //if(dto.idTipo() > 0){ this.setTipo(dto.idTipo()); }
+    //----------------------------
+    //Como impresora recibe la entidad Tipo y no un int (para guardar solo el id)...
+    //...este if no funciona
+    //if(dto.idTipo() > 0){ this.setTipo(dto.idTipo()); } 
+    if(dto.idTipo() > 0){ this.setTipo(new Tipos(dto.idTipo(), null)); }
+    //----------------------------
     if(dto.marca() != null){ this.setMarca(dto.marca()); }
     if(dto.modelo() != null){ this.setModelo(dto.modelo());}
     if(dto.titulo() != null){ this.setTitulo(dto.titulo());}
