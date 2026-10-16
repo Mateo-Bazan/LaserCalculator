@@ -4,6 +4,7 @@ import com.abgraphicdesing.controller.ImpresorasController;
 import com.abgraphicdesing.view.ui.ImpresorasResumeCard;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
@@ -14,7 +15,11 @@ public class CalcualdoraView extends HBox{
 
   public CalcualdoraView(ImpresorasController controller){  
     this.controller = controller;
-    VBox leftSide = new VBox();
+    getStyleClass().add("app-background");
+    setPadding(new Insets(28, 36, 28, 36));
+    setSpacing(12);
+
+    VBox leftSide = new VBox(10);
     Label impresorasTitulos = new Label("Impresoras");
 
 

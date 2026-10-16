@@ -86,7 +86,7 @@ public class App extends Application{
       getClass().getResource("/css/styles.css").toExternalForm()
     );
 
-    primaryStage.setTitle("AB Graphic Desing App");
+    primaryStage.setTitle("AB Graphic Design App");
     primaryStage.setScene(scene);
     primaryStage.show();
   }
