@@ -2,10 +2,12 @@ package com.abgraphicdesing.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.PeriodosController;
-import com.abgraphicdesing.model.entity.Ajustes;
+import com.abgraphicdesing.model.dto.AjustesResDto;
 import com.abgraphicdesing.view.ui.AjustesFormDialog;
 import com.abgraphicdesing.view.util.Format;
 

@@ -51,6 +51,10 @@ public class MaterialesView extends VBox {
   private List<Materiales> filtrados = new ArrayList<>();
   private int pagina = 0;
 
+  private final Button btnAgregar = new Button("Agregar");
+  private final Button btnEditar = new Button("Editar");
+  private final Button btnEliminar = new Button("Eliminar");
+
   public MaterialesView(MaterialesController controller) {
     this.controller = controller;
     getStyleClass().add("app-background");
@@ -115,6 +119,17 @@ public class MaterialesView extends VBox {
 
     getChildren().add(scroll);
     cargarMateriales();
+  }
+  
+  private <T> TableColumn<MaterialesResDto, T> columna(
+    String titulo,
+    Function<MaterialesResDto, T> extractor
+  ) {
+    TableColumn<MaterialesResDto, T> col = new TableColumn<>(titulo);
+    col.setCellValueFactory(c ->
+      new ReadOnlyObjectWrapper<>(extractor.apply(c.getValue()))
+    );
+    return col;
   }
 
   // ---------- Columnas ----------

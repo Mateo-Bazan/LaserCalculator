@@ -7,7 +7,7 @@ import java.util.UUID;
 
 import com.abgraphicdesing.controller.util.AsyncExecutor;
 import com.abgraphicdesing.model.dto.MaterialesReqDto;
-import com.abgraphicdesing.model.entity.Materiales;
+import com.abgraphicdesing.model.dto.MaterialesResDto;
 import com.abgraphicdesing.service.MaterialesService;
 
 
@@ -19,7 +19,7 @@ public class MaterialesController{
   }
 
   public void getAll(
-    Consumer <List<Materiales>> onSuccess,
+    Consumer <List<MaterialesResDto>> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -31,7 +31,7 @@ public class MaterialesController{
 
   public void create(
     MaterialesReqDto dto,
-    Consumer <Materiales> onSuccess,
+    Consumer <MaterialesResDto> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -43,7 +43,7 @@ public class MaterialesController{
 
   public void update(
     UUID id, MaterialesReqDto dto,
-    Consumer<Materiales> onSucces,
+    Consumer<MaterialesResDto> onSucces,
     Consumer<Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -55,7 +55,7 @@ public class MaterialesController{
 
   public void findById(
     UUID id,
-    Consumer <Optional<Materiales>> onSuccess,
+    Consumer <Optional<MaterialesResDto>> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(

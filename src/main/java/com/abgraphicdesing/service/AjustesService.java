@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.abgraphicdesing.repository.AjustesRepository;
 import com.abgraphicdesing.model.dto.AjustesReqDto;
+import com.abgraphicdesing.model.dto.AjustesResDto;
 import com.abgraphicdesing.model.entity.Ajustes;
 
 public class AjustesService{
@@ -14,36 +15,37 @@ public class AjustesService{
     this.repository = repository;
   }
 
-  public List<Ajustes> getAll(){
-    List<Ajustes> listaAjustes = this.repository.getAll();
+  public List<AjustesResDto> getAll(){
+    List<AjustesResDto> listaAjustes = this.repository.getAll().stream().map(AjustesResDto::new).toList();
+    if(listaAjustes.isEmpty()){
+      return null;
+    }
     return listaAjustes;
   }
 
-  public Optional<Ajustes> findById (int id){
+  public Optional<AjustesResDto> findById (int id){
     Optional<Ajustes> ajuste = this.repository.findById(id);
-    return ajuste;
+    if(ajuste.isEmpty()){
+      return null;
+    }
+    return ajuste.map(AjustesResDto::new);
   }
 
-  public boolean create (AjustesReqDto dto){
+  public AjustesResDto create (AjustesReqDto dto){
     Ajustes a = new Ajustes(
       dto.nombre(),
       dto.gasto(),
       dto.idPeriodo()
     );
-    return this.repository.create(a);
+    this.repository.create(a);
+    return new AjustesResDto(a);
   }
 
-  public boolean update(int id, AjustesReqDto dto){
-    Optional<Ajustes> ajusteToUpdate = this.repository.findById(id);
-    if(ajusteToUpdate.isPresent()){
-      Ajustes updatedAjuste = ajusteToUpdate.orElse(new Ajustes());
-      updatedAjuste.merge(dto);
-      System.out.println(updatedAjuste);
-      
-      return this.repository.update(updatedAjuste);
-      
-    }
-    return false;
+  public AjustesResDto update(int id, AjustesReqDto dto){
+    Ajustes ajuste = repository.findById(id).orElseThrow(() -> new IllegalArgumentException("Ajuste no encontrado"));
+    ajuste.merge(dto);
+    this.repository.update(ajuste);
+    return new AjustesResDto(ajuste);
   }
 
   public String delete(int id){

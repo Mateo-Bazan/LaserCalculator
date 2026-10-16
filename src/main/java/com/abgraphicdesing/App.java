@@ -42,6 +42,7 @@ public class App extends Application{
       e.printStackTrace();
     }
     
+    /* 
     try(Connection conn = dbConfig.getConnection();
       PreparedStatement stmt = conn.prepareStatement("Select count(*) from materiales");
       ResultSet result = stmt.executeQuery()
@@ -52,6 +53,7 @@ public class App extends Application{
     }catch(SQLException e){
       System.out.println(e.getMessage());
     }
+    */
 
     launch(args);
   }

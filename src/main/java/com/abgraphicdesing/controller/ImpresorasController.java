@@ -42,7 +42,8 @@ public class ImpresorasController{
   }
   
   public void update(
-    UUID id, ImpresorasReqDto dto,
+    UUID id,
+    ImpresorasReqDto dto,
     Consumer<ImpresorasResDto> onSuccess,
     Consumer<Throwable> onError
   ){
