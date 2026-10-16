@@ -6,7 +6,7 @@ import java.util.Optional;
 
 import com.abgraphicdesing.controller.util.AsyncExecutor;
 import com.abgraphicdesing.model.dto.AjustesReqDto;
-import com.abgraphicdesing.model.entity.Ajustes;
+import com.abgraphicdesing.model.dto.AjustesResDto;
 import com.abgraphicdesing.service.AjustesService;
 
 public class AjustesController {
@@ -17,7 +17,7 @@ public class AjustesController {
   }
 
   public void getAll(
-    Consumer <List<Ajustes>> onSuccess,
+    Consumer <List<AjustesResDto>> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -29,7 +29,7 @@ public class AjustesController {
 
   public void create(
     AjustesReqDto dto,
-    Consumer <Boolean> onSuccess,
+    Consumer <AjustesResDto> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -42,7 +42,7 @@ public class AjustesController {
   public void update(
     int id,
     AjustesReqDto dto,
-    Consumer <Boolean> onSuccess,
+    Consumer <AjustesResDto> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(
@@ -54,7 +54,7 @@ public class AjustesController {
 
   public void findById(
     int id,
-    Consumer <Optional<Ajustes>> onSuccess,
+    Consumer <Optional<AjustesResDto>> onSuccess,
     Consumer <Throwable> onError
   ){
     AsyncExecutor.execute(

@@ -2,11 +2,15 @@ package com.abgraphicdesing.view;
 
 import com.abgraphicdesing.controller.ImpresorasController;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
+import com.abgraphicdesing.view.ui.ImpresoraFormDialog;
 import com.abgraphicdesing.view.ui.ImpresoraFullCard;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -16,6 +20,7 @@ import javafx.scene.layout.VBox;
 
 public class ImpresorasView extends HBox {
   private final ImpresorasController controller;
+  private final HBox contentImpresoras = new HBox();
 
   public ImpresorasView(ImpresorasController controller){
     this.controller = controller;
@@ -29,9 +34,10 @@ public class ImpresorasView extends HBox {
     Button buttonAddImpresora = new Button("+");
     HBox separatorLine = new HBox();
 
+    buttonAddImpresora.setOnAction(e -> onAgregar());
+
     //Boolean showForm = false;
-  
-    HBox contentImpresoras = new HBox();
+    
     contentImpresoras.setAlignment(Pos.CENTER);
     container.setMaxWidth(Double.MAX_VALUE);    
 
@@ -76,7 +82,11 @@ public class ImpresorasView extends HBox {
     impresoras ->{
       if(impresoras != null && !impresoras.isEmpty()){
         for(ImpresorasResDto impresora : impresoras){
-          ImpresoraFullCard card = new ImpresoraFullCard(impresora);
+          ImpresoraFullCard card = new ImpresoraFullCard(
+            impresora,
+            this::onEditar,
+            this::onEliminar
+          );
           container.getChildren().add(card);
         }
       }else{
@@ -87,5 +97,48 @@ public class ImpresorasView extends HBox {
     error ->{
       System.out.println("Error cargando impresoras: " + error.getMessage());
     });
+  }
+
+  private void onAgregar(){
+    new ImpresoraFormDialog(null)
+      .showAndWait()
+      .ifPresent(dto -> controller.create(
+        dto,
+        onSucces -> recargar(),
+        onError -> mostrarError("No se pudo agregar la impresora", onError)
+      ));
+  }
+  private void onEditar(ImpresorasResDto impresora){
+    new ImpresoraFormDialog(impresora)
+      .showAndWait()
+      .ifPresent(dto -> controller.update(
+        impresora.id(), 
+        dto,
+        onSucces -> recargar(),
+        onError -> mostrarError("No se pudo Editar la impresora", onError)
+      )
+    );
+  }
+  private void onEliminar(ImpresorasResDto impresora){
+    Alert confirm = new Alert(
+      Alert.AlertType.CONFIRMATION,
+      "¿Eliminar " + impresora.titulo() + "?",
+      ButtonType.OK, ButtonType.CANCEL
+    );
+    confirm.showAndWait()
+      .filter(b -> b == ButtonType.OK)
+      .ifPresent(b -> controller.delete(
+        impresora.id(),
+        onSucces -> recargar(),
+        onError -> mostrarError("No se pudo Eliminar la impresora", onError)
+      ));
+  }
+
+  private void recargar(){
+    contentImpresoras.getChildren().clear();
+    cargarImpresoras(contentImpresoras);
+  }
+  private void mostrarError(String texto, Throwable err) {
+    new Alert(AlertType.ERROR, texto + ": " + err.getMessage()).show();
   }
 }

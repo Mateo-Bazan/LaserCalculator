@@ -61,7 +61,12 @@ public class ImpresorasService{
     impresoraToUpdate.merge(dto);
 
     this.repository.update(impresoraToUpdate);
-    return new ImpresorasResDto(impresoraToUpdate);
+    //Hago un findById, porque al guardar la impresora y recargar... 
+    // ...no se sabe el texto del Tipo q guarda la impresora...
+    //... el findById hace el JOIN desde la db donde saca el texto de Tipo.
+    return this.repository.findById(id)
+      .map(ImpresorasResDto::new)
+      .orElseThrow(() -> new IllegalStateException("No se pudo releer la impresora"));
   }
 
   public String delete(UUID id){

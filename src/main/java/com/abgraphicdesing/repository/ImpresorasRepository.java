@@ -18,7 +18,7 @@ public class ImpresorasRepository{
 
   public ImpresorasRepository(DbConfig dbConfig){
     this.dbConfig = dbConfig;
-   }
+  }
   
   public boolean save(Impresoras impresora){
     String querySaveImpresora = """
@@ -30,7 +30,7 @@ public class ImpresorasRepository{
       PreparedStatement pstmt = conn.prepareStatement(querySaveImpresora)
     ){
       pstmt.setObject(1, impresora.getId().toString());
-      pstmt.setObject(2, impresora.getTipo().getId());
+      pstmt.setInt(2, impresora.getTipo().getId());
       pstmt.setObject(3, impresora.getMarca());
       pstmt.setObject(4, impresora.getModelo());
       pstmt.setObject(5, impresora.getTitulo());
@@ -69,7 +69,7 @@ public class ImpresorasRepository{
       Connection conn = dbConfig.getConnection();
       PreparedStatement pstmt = conn.prepareStatement(queryUpdateImpresora)
     ){
-      pstmt.setObject(1, impresora.getTipo().getTipo());
+      pstmt.setObject(1, impresora.getTipo().getId());
       pstmt.setObject(2, impresora.getMarca());
       pstmt.setObject(3, impresora.getModelo());
       pstmt.setObject(4, impresora.getTitulo());
@@ -78,7 +78,7 @@ public class ImpresorasRepository{
       pstmt.setObject(7, impresora.getPrecioCompra());
       pstmt.setObject(8, impresora.getPrecioRespuesto());
       pstmt.setObject(9, impresora.getAmortizacion());
-      pstmt.setObject(10, impresora.getId());
+      pstmt.setString(10, impresora.getId().toString());
 
       int rowAffected = pstmt.executeUpdate();
       return rowAffected > 0;
@@ -128,7 +128,7 @@ public class ImpresorasRepository{
           rs.getInt("watts"),
           rs.getFloat("precio_compra"),
           rs.getFloat("precio_respuesto"),
-          rs.getObject("id", UUID.class)
+          UUID.fromString(rs.getString("id"))
         ));
       }
       return Optional.empty();
