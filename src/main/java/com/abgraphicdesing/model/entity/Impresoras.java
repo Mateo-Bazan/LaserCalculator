@@ -128,11 +128,6 @@ public class Impresoras {
     if(dto.marca() != null){ this.setMarca(dto.marca()); }
     if(dto.modelo() != null){ this.setModelo(dto.modelo());}
     if(dto.titulo() != null){ this.setTitulo(dto.titulo());}
-    if(dto.vidaUtil() > 0){ 
-      this.setVidaUtil(dto.vidaUtil());
-      this.setAmortizacion(this.precioCompra, this.precioRespuesto, dto.vidaUtil());
-    }
-    if(dto.watts() > 0){this.setWatts(dto.watts());}
     if(dto.precioCompra() > 0){
       this.setPrecioCompra(dto.precioCompra());
       this.setAmortizacion(dto.precioCompra(), this.precioRespuesto, this.vidaUtil);
@@ -141,5 +136,10 @@ public class Impresoras {
       this.setPrecioRespuesto(dto.precioRespuesto());
       this.setAmortizacion(this.precioCompra, dto.precioRespuesto(), this.vidaUtil);
     }
+    if(dto.vidaUtil() > 0){ 
+      this.setVidaUtil(dto.vidaUtil());
+      this.setAmortizacion(this.precioCompra, this.precioRespuesto, dto.vidaUtil());
+    }
+    if(dto.watts() > 0){this.setWatts(dto.watts());}
   };
 }
