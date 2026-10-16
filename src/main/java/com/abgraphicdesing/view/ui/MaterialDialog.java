@@ -1,7 +1,7 @@
 package com.abgraphicdesing.view.ui;
 
 import com.abgraphicdesing.model.dto.MaterialesReqDto;
-import com.abgraphicdesing.model.entity.Materiales;
+import com.abgraphicdesing.model.dto.MaterialesResDto;
 
 import javafx.geometry.Insets;
 import javafx.scene.control.ButtonBar.ButtonData;
@@ -20,18 +20,18 @@ public class MaterialDialog extends Dialog<MaterialesReqDto> {
   private final TextField txtDimensiones = new TextField();
   private final TextField txtStock = new TextField();
 
-  public MaterialDialog(Materiales existente) {
+  public MaterialDialog(MaterialesResDto existente) {
     setTitle(existente == null ? "Agregar material" : "Editar material");
 
     ButtonType guardar = new ButtonType("Guardar", ButtonData.OK_DONE);
     getDialogPane().getButtonTypes().addAll(guardar, ButtonType.CANCEL);
 
     if (existente != null) {
-      txtNombre.setText(orEmpty(existente.getNombre()));
-      txtPrecioCompra.setText(String.valueOf(existente.getPrecioCompra()));
-      txtMerma.setText(String.valueOf(existente.getMerma()));
-      txtDimensiones.setText(orEmpty(existente.getDimensiones()));
-      txtStock.setText(String.valueOf(existente.getStock()));
+      txtNombre.setText(orEmpty(existente.nombre()));
+      txtPrecioCompra.setText(String.valueOf(existente.precioCompra()));
+      txtMerma.setText(String.valueOf(existente.merma()));
+      txtDimensiones.setText(orEmpty(existente.dimensiones()));
+      txtStock.setText(String.valueOf(existente.stock()));
     }
 
     GridPane grid = new GridPane();
@@ -56,7 +56,7 @@ public class MaterialDialog extends Dialog<MaterialesReqDto> {
         if (nombre.isEmpty() || precioCompra < 0 || merma < 0 || stock < 0) {
           return null;
         }
-        return new MaterialesReqDto(nombre, precioCompra, merma, 0,
+        return new MaterialesReqDto(nombre, precioCompra, merma,
           dimensiones.isEmpty() ? null : dimensiones, stock);
       } catch (NumberFormatException e) {
         return null;
