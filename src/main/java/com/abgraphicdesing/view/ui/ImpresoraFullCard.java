@@ -1,151 +1,140 @@
 package com.abgraphicdesing.view.ui;
 
+import java.util.UUID;
+import java.util.function.Consumer;
+
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
+import com.abgraphicdesing.view.util.Format;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 
-import java.util.function.Consumer;
-import javafx.scene.control.Button;
-import javafx.scene.layout.Region;
+/** Tarjeta de impresora segun la referencia (badge, titulo, filas, seleccion). */
+public class ImpresoraFullCard extends VBox {
 
-public class ImpresoraFullCard extends VBox{
-  public ImpresoraFullCard(
-  ImpresorasResDto dto,
-  Consumer<ImpresorasResDto> onEditar,
-  Consumer<ImpresorasResDto> onEliminar
-  ){
+  private final StackPane overlay = new StackPane();
+  private final VBox card = new VBox(4);
+  private final Button btnEditar = new Button("✎");
+  private final Button btnEliminar = new Button("🗑");
 
-  
-    StackPane cardContainer = new StackPane();
-    VBox contentContainer = new VBox();
-    VBox firstDataContainer = new VBox();
-    HBox modeloContainer = new HBox();
-    HBox tipoContainer = new HBox();
-  
-    HBox separatorLine = new HBox();
+  public ImpresoraFullCard(ImpresorasResDto dto) {
+    card.getStyleClass().add("printer-card");
+    card.setPrefWidth(270);
 
-    VBox dataContainer = new VBox();
-    HBox vidaUtilContainer = new HBox();
-    HBox precioRepuestoContainer = new HBox();
-    HBox precioCompraContainer = new HBox();
-    HBox amortizacionContainer = new HBox();
-    HBox gastoEnergeticoContainer = new HBox();
-  
+    Label marca = new Label(Format.texto(dto.marca()).toUpperCase());
+    marca.getStyleClass().add("brand-badge");
+    HBox badgeRow = new HBox(marca);
+    badgeRow.setAlignment(Pos.CENTER);
 
+    Label titulo = new Label(Format.texto(dto.titulo()));
+    titulo.getStyleClass().add("printer-card-title");
+    titulo.setWrapText(true);
+    titulo.setAlignment(Pos.CENTER);
+    titulo.setMaxWidth(Double.MAX_VALUE);
+    titulo.setAlignment(Pos.CENTER);
 
-    Label marca = new Label(dto.marca());
-    Label modelo = new Label(dto.modelo());
-  
-    Label tipoTitle = new Label("Tipo: ");
-    Label fetchTipo = new Label(dto.tipo());
-  
-    Label vidaUtilTitle = new Label("Vida util: ");
-    Label fetchVidaUtil = new Label(String.valueOf(dto.vidaUtil()) +  "hs");
-  
-    Label precioRepuestoTitle = new Label("Precio Repuesto: ");
-    Label fetchPrecioRepuesto = new Label("$ " + String.valueOf(dto.precioRespuesto()));
-  
-    Label precioCompraTitle = new Label("Precio Compra: ");
-    Label fetchPrecioCompra = new Label("$ " + String.valueOf(dto.precioCompra()));
-  
-    Label amortizacionTitle = new Label("Amortiazacion: ");
-    Label fetchAmortizacion = new Label("$ " + String.valueOf(dto.amortizacion()));
-  
-    Label gastoEnergeticoTitle = new Label("Gasto energetico: ");
-    Label fetchGastoEnergetico = new Label(String.valueOf(dto.watts()) + "W");
-    
-    tipoContainer.getChildren().addAll(
-      tipoTitle,
-      fetchTipo
+    card.getChildren().addAll(
+      badgeRow,
+      titulo,
+      fila("Modelo:", Format.texto(dto.modelo())),
+      fila("Tipo:", Format.texto(dto.tipo())),
+      separador(),
+      fila("Vida útil:", Format.hs(dto.vidaUtil())),
+      fila("Precio Repuestos:", Format.moneda(dto.precioRespuesto())),
+      fila("Precio de Compra:", Format.moneda(dto.precioCompra())),
+      fila("Amortización (hs):", Format.moneda(dto.amortizacion())),
+      fila("Gasto energético:", Format.watts(dto.watts()))
     );
 
-    vidaUtilContainer.getChildren().addAll(
-      vidaUtilTitle,
-      fetchVidaUtil
-    );
+    btnEditar.getStyleClass().add("btn-icon-edit");
+    btnEditar.setVisible(false);
+    btnEliminar.getStyleClass().add("btn-icon-delete");
+    btnEliminar.setVisible(false);
 
-    precioRepuestoContainer.getChildren().addAll(
-      precioRepuestoTitle,
-      fetchPrecioRepuesto
-    );
+    overlay.getChildren().add(card);
+    overlay.getChildren().addAll(btnEditar, btnEliminar);
+    StackPane.setAlignment(btnEditar, Pos.BOTTOM_LEFT);
+    StackPane.setAlignment(btnEliminar, Pos.BOTTOM_RIGHT);
+    btnEditar.setTranslateY(14);
+    btnEliminar.setTranslateY(14);
 
-    precioCompraContainer.getChildren().addAll(
-      precioCompraTitle,
-      fetchPrecioCompra
-    );
+    setPadding(new Insets(6, 2, 16, 2));
+    getChildren().add(overlay);
 
-    amortizacionContainer.getChildren().addAll(
-      amortizacionTitle,
-      fetchAmortizacion
-    );
+    UUID id = dto.id();
+    setOnMouseClicked(e -> {
+      getProperties().put("impresoraId", id);
+      // La vista padre escucha esta propiedad para gestionar la seleccion.
+      fireEvent(new SelectionEvent(id));
+      e.consume();
+    });
+  }
 
-    gastoEnergeticoContainer.getChildren().addAll(
-      gastoEnergeticoTitle,
-      fetchGastoEnergetico
-    );
+  private HBox fila(String etiqueta, String valor) {
+    Label l = new Label(etiqueta);
+    l.getStyleClass().add("printer-row-label");
+    Label v = new Label(valor);
+    v.getStyleClass().add("printer-row-value");
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
+    HBox row = new HBox(l, spacer, v);
+    row.setAlignment(Pos.CENTER_LEFT);
+    return row;
+  }
 
-    separatorLine.getStyleClass().add("separator-line");
-    VBox.setMargin(separatorLine, new Insets(10, 0, 10, 0));
+  private Separator separador() {
+    Separator s = new Separator();
+    s.getStyleClass().add("card-separator");
+    return s;
+  }
 
-    dataContainer.getStyleClass().add("rowDataContainerFullCard");
-    dataContainer.getChildren().addAll(
-      vidaUtilContainer,
-      precioRepuestoContainer,
-      precioCompraContainer,
-      amortizacionContainer,
-      gastoEnergeticoContainer
-    );
+  public void setSelected(boolean selected) {
+    if (selected) {
+      if (!card.getStyleClass().contains("printer-card-selected")) {
+        card.getStyleClass().add("printer-card-selected");
+      }
+    } else {
+      card.getStyleClass().remove("printer-card-selected");
+    }
+    btnEditar.setVisible(selected);
+    btnEliminar.setVisible(selected);
+  }
 
-    marca.getStyleClass().add("marcaTituloFullCard");
+  public void setOnEdit(Consumer<UUID> action) {
+    btnEditar.setOnAction(e -> {
+      e.consume();
+      action.accept((UUID) getProperties().get("impresoraId"));
+    });
+  }
 
-    modelo.getStyleClass().add("modeloTituloFullCard");
-    modeloContainer.getStyleClass().add("modeloTituloContainerFC");
-    modeloContainer.getChildren().add(modelo);
-    
-    
-    firstDataContainer.getStyleClass().add("firstDataContainer");
-    firstDataContainer.getChildren().addAll(
-      modeloContainer,
-      tipoContainer
-    );
+  public void setOnDelete(Consumer<UUID> action) {
+    btnEliminar.setOnAction(e -> {
+      e.consume();
+      action.accept((UUID) getProperties().get("impresoraId"));
+    });
+  }
 
-    contentContainer.getChildren().addAll(
-      firstDataContainer,
-      separatorLine,
-      dataContainer
-    );
+  /** Evento simple para avisar a la vista que esta tarjeta fue clickeada. */
+  public static class SelectionEvent extends javafx.event.Event {
+    public static final javafx.event.EventType<SelectionEvent> TYPE =
+      new javafx.event.EventType<>("impresora-selected");
+    private final UUID id;
 
-    cardContainer.setMinWidth(100);
-    cardContainer.setMinHeight(200);
-    cardContainer.getStyleClass().add("impresoraFullCard");
-    cardContainer.getChildren().addAll(contentContainer, marca);
-    StackPane.setAlignment(marca, Pos.TOP_LEFT);
-    
-    //Botones de editar y eliminar
-    Button btnEditar = new Button("✎");
-    Button btnEliminar = new Button("✕");
-    btnEditar.getStyleClass().addAll("cardActionButton", "cardEditButton");
-    btnEliminar.getStyleClass().addAll("cardActionButton", "cardDeleteButton");
+    public SelectionEvent(UUID id) {
+      super(TYPE);
+      this.id = id;
+    }
 
-    btnEditar.setOnAction(e -> onEditar.accept(dto));
-    btnEliminar.setOnAction(e -> onEliminar.accept(dto));
-
-    HBox acciones = new HBox(4, btnEditar, btnEliminar);
-    acciones.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE); // que no ocupe toda la tarjeta
-    acciones.visibleProperty().bind(cardContainer.hoverProperty());
-
-    cardContainer.getChildren().add(acciones); // al final, para que quede por encima
-    StackPane.setAlignment(acciones, Pos.TOP_RIGHT);
-    StackPane.setMargin(acciones, new Insets(6));
-    //Botones de editar y eliminar
-
-    getChildren().add(
-      cardContainer
-    );
+    public UUID getImpresoraId() {
+      return id;
+    }
   }
 }

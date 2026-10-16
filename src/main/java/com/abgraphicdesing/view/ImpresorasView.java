@@ -1,10 +1,18 @@
 package com.abgraphicdesing.view;
 
-import com.abgraphicdesing.controller.ImpresorasController;
-import com.abgraphicdesing.model.dto.ImpresorasResDto;
-import com.abgraphicdesing.view.ui.ImpresoraFormDialog;
-import com.abgraphicdesing.view.ui.ImpresoraFullCard;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
+import com.abgraphicdesing.controller.ImpresorasController;
+import com.abgraphicdesing.model.dto.ImpresorasReqDto;
+import com.abgraphicdesing.model.dto.ImpresorasResDto;
+import com.abgraphicdesing.view.ui.ImpresoraFormPanel;
+import com.abgraphicdesing.view.ui.ImpresoraFullCard;
+import com.abgraphicdesing.view.ui.ImpresoraFullCard.SelectionEvent;
+
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Alert;
@@ -12,133 +20,180 @@ import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
+public class ImpresorasView extends VBox {
 
-public class ImpresorasView extends HBox {
   private final ImpresorasController controller;
-  private final HBox contentImpresoras = new HBox();
+  private final FlowPane cards = new FlowPane();
+  private final VBox formSlot = new VBox();
+  private final Label status = new Label();
+  private final List<ImpresorasResDto> cache = new ArrayList<>();
+  private final List<ImpresoraFullCard> cardNodes = new ArrayList<>();
+  private UUID seleccionada = null;
 
-  public ImpresorasView(ImpresorasController controller){
+  public ImpresorasView(ImpresorasController controller) {
     this.controller = controller;
-    VBox container = new VBox();
+    getStyleClass().add("app-background");
+    setPadding(new Insets(28, 36, 28, 36));
+    setSpacing(12);
 
-    HBox presentationContainer = new HBox();
-    VBox presentationcontentImpresoras = new VBox();
-    Label presentationTitle = new Label("Mis Impresoras");
-    Label presentationSubTitle = new Label("Catalogo de impresoras y sus configuraciones.");
-    Region spacingPresentation = new Region();
-    Button buttonAddImpresora = new Button("+");
-    HBox separatorLine = new HBox();
+    Label titulo = new Label("Mis Impresoras");
+    titulo.getStyleClass().add("page-title");
+    Label subtitulo = new Label("Catálogo de impresoras y sus configuraciones.");
+    subtitulo.getStyleClass().add("page-subtitle");
+    VBox encabezado = new VBox(2, titulo, subtitulo);
 
-    buttonAddImpresora.setOnAction(e -> onAgregar());
+    Region spacer = new Region();
+    HBox.setHgrow(spacer, Priority.ALWAYS);
 
-    //Boolean showForm = false;
-    
-    contentImpresoras.setAlignment(Pos.CENTER);
-    container.setMaxWidth(Double.MAX_VALUE);    
+    Button btnAgregar = new Button("+");
+    btnAgregar.getStyleClass().add("btn-add");
+    btnAgregar.setOnAction(e -> mostrarFormulario(null));
 
-    contentImpresoras.getStyleClass().add("imprViewContentImpresora");
-    contentImpresoras.setMaxWidth(Double.MAX_VALUE);
-    contentImpresoras.setAlignment(Pos.CENTER);
-    VBox.setVgrow(contentImpresoras, Priority.ALWAYS);
+    HBox header = new HBox(encabezado, spacer, btnAgregar);
+    header.setAlignment(Pos.CENTER_LEFT);
 
-    HBox.setHgrow(container, Priority.ALWAYS);
-    HBox.setHgrow(spacingPresentation, Priority.ALWAYS);
+    javafx.scene.control.Separator separador = new javafx.scene.control.Separator();
+    separador.getStyleClass().add("header-separator");
 
+    status.getStyleClass().add("page-subtitle");
 
-    presentationTitle.getStyleClass().add("imprViewTitle");
-    presentationSubTitle.getStyleClass().add("imprViewSubtitle");
+    cards.setHgap(24);
+    cards.setVgap(20);
+    cards.setAlignment(Pos.TOP_LEFT);
 
-    presentationcontentImpresoras.getChildren().addAll(
-      presentationTitle,
-      presentationSubTitle
-    );
-    
-    
-    presentationContainer.setAlignment(Pos.CENTER_LEFT);
-    presentationContainer.getChildren().addAll(
-      presentationcontentImpresoras, 
-      spacingPresentation,
-      buttonAddImpresora
-    );
+    VBox contenido = new VBox(12, header, separador, formSlot, status, cards);
+    contenido.setMaxWidth(1100);
 
-    VBox.setMargin(separatorLine, new Insets(5, 0, 5, 0));
-    separatorLine.getStyleClass().add("separator-line-impView");
+    HBox centrado = new HBox(contenido);
+    centrado.setAlignment(Pos.TOP_CENTER);
+    HBox.setHgrow(contenido, Priority.ALWAYS);
 
-    container.getChildren().addAll(presentationContainer, separatorLine, contentImpresoras);
-    container.getStyleClass().add("imprViewContainer");
+    ScrollPane scroll = new ScrollPane(centrado);
+    scroll.setFitToWidth(true);
+    scroll.setFitToHeight(true);
+    scroll.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
+    scroll.getStyleClass().add("clean-scroll");
+    VBox.setVgrow(scroll, Priority.ALWAYS);
 
-
-    getChildren().add(container);
-    cargarImpresoras(contentImpresoras);
+    getChildren().add(scroll);
+    cargarImpresoras();
   }
 
-  private void cargarImpresoras(HBox container){
-  controller.getAll(
-    impresoras ->{
-      if(impresoras != null && !impresoras.isEmpty()){
-        for(ImpresorasResDto impresora : impresoras){
-          ImpresoraFullCard card = new ImpresoraFullCard(
-            impresora,
-            this::onEditar,
-            this::onEliminar
-          );
-          container.getChildren().add(card);
-        }
-      }else{
-        Label label = new Label("No hay impresoras");
-        container.getChildren().add(label);
+  // ---------- Datos ----------
+
+  private void cargarImpresoras() {
+    status.setText("Cargando...");
+    controller.getAll(
+      lista -> Platform.runLater(() -> {
+        cache.clear();
+        if (lista != null) cache.addAll(lista);
+        seleccionada = null;
+        repintar();
+        status.setText(cache.isEmpty() ? "No hay impresoras cargadas." : "");
+      }),
+      err -> Platform.runLater(() ->
+        status.setText("Error al cargar las impresoras."))
+    );
+  }
+
+  private void repintar() {
+    cards.getChildren().clear();
+    cardNodes.clear();
+    for (ImpresorasResDto dto : cache) {
+      ImpresoraFullCard card = new ImpresoraFullCard(dto);
+      card.setSelected(dto.id() != null && dto.id().equals(seleccionada));
+      card.addEventHandler(SelectionEvent.TYPE, e -> seleccionar(e.getImpresoraId()));
+      card.setOnEdit(this::confirmarEliminar_PedirEdicion);
+      card.setOnDelete(this::pedirConfirmacionEliminar);
+      cardNodes.add(card);
+      cards.getChildren().add(card);
+    }
+  }
+
+  private void seleccionar(UUID id) {
+    seleccionada = id;
+    for (ImpresoraFullCard c : cardNodes) {
+      Object prop = c.getProperties().get("impresoraId");
+      c.setSelected(prop != null && prop.equals(id));
+    }
+  }
+
+  private List<String> tiposConocidos() {
+    List<String> tipos = new ArrayList<>();
+    for (ImpresorasResDto dto : cache) {
+      if (dto.tipo() != null && !dto.tipo().isBlank() && !tipos.contains(dto.tipo())) {
+        tipos.add(dto.tipo());
       }
-    }, 
-    error ->{
-      System.out.println("Error cargando impresoras: " + error.getMessage());
-    });
+    }
+    return tipos;
   }
 
-  private void onAgregar(){
-    new ImpresoraFormDialog(null)
-      .showAndWait()
-      .ifPresent(dto -> controller.create(
-        dto,
-        onSucces -> recargar(),
-        onError -> mostrarError("No se pudo agregar la impresora", onError)
-      ));
-  }
-  private void onEditar(ImpresorasResDto impresora){
-    new ImpresoraFormDialog(impresora)
-      .showAndWait()
-      .ifPresent(dto -> controller.update(
-        impresora.id(), 
-        dto,
-        onSucces -> recargar(),
-        onError -> mostrarError("No se pudo Editar la impresora", onError)
-      )
-    );
-  }
-  private void onEliminar(ImpresorasResDto impresora){
-    Alert confirm = new Alert(
-      Alert.AlertType.CONFIRMATION,
-      "¿Eliminar " + impresora.titulo() + "?",
-      ButtonType.OK, ButtonType.CANCEL
-    );
-    confirm.showAndWait()
-      .filter(b -> b == ButtonType.OK)
-      .ifPresent(b -> controller.delete(
-        impresora.id(),
-        onSucces -> recargar(),
-        onError -> mostrarError("No se pudo Eliminar la impresora", onError)
-      ));
+  // ---------- Formulario ----------
+
+  private void mostrarFormulario(ImpresorasResDto existente) {
+    formSlot.getChildren().clear();
+    ImpresoraFormPanel form = new ImpresoraFormPanel(tiposConocidos(), existente);
+    form.setOnCancelar(() -> formSlot.getChildren().clear());
+    if (existente == null) {
+      form.setOnGuardar(dto -> guardarCreacion(dto));
+    } else {
+      form.setOnGuardar(dto -> guardarEdicion(existente.id(), dto));
+    }
+    formSlot.getChildren().add(form);
   }
 
-  private void recargar(){
-    contentImpresoras.getChildren().clear();
-    cargarImpresoras(contentImpresoras);
+  private void guardarCreacion(ImpresorasReqDto dto) {
+    controller.create(
+      dto,
+      creada -> Platform.runLater(() -> {
+        formSlot.getChildren().clear();
+        cargarImpresoras();
+      }),
+      err -> Platform.runLater(() ->
+        status.setText("No se pudo guardar la impresora."))
+    );
   }
-  private void mostrarError(String texto, Throwable err) {
-    new Alert(AlertType.ERROR, texto + ": " + err.getMessage()).show();
+
+  private void guardarEdicion(UUID id, ImpresorasReqDto dto) {
+    controller.update(
+      id, dto,
+      actualizada -> Platform.runLater(() -> {
+        formSlot.getChildren().clear();
+        cargarImpresoras();
+      }),
+      err -> Platform.runLater(() ->
+        status.setText("No se pudo actualizar la impresora."))
+    );
+  }
+
+  private void confirmarEliminar_PedirEdicion(UUID id) {
+    Optional<ImpresorasResDto> dto = cache.stream()
+      .filter(i -> i.id() != null && i.id().equals(id)).findFirst();
+    dto.ifPresent(this::mostrarFormulario);
+  }
+
+  private void pedirConfirmacionEliminar(UUID id) {
+    Optional<ImpresorasResDto> dto = cache.stream()
+      .filter(i -> i.id() != null && i.id().equals(id)).findFirst();
+    String nombre = dto.map(ImpresorasResDto::titulo).orElse("esta impresora");
+
+    Alert confirmar = new Alert(AlertType.CONFIRMATION,
+      "¿Eliminar \"" + nombre + "\"?", ButtonType.OK, ButtonType.CANCEL);
+    confirmar.setHeaderText(null);
+    confirmar.showAndWait()
+      .filter(r -> r == ButtonType.OK)
+      .ifPresent(r -> controller.delete(
+        id,
+        msg -> Platform.runLater(this::cargarImpresoras),
+        err -> Platform.runLater(() ->
+          status.setText("No se pudo eliminar la impresora."))
+      ));
   }
 }
