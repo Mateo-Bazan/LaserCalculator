@@ -30,42 +30,39 @@ public class CalculosService {
   public CalculosResDto create (CalculosReqDto dto){
     int gastos = 0, costoBase = 0, precioFinal = 0;
     List<Ajustes> ajustes = this.ajustesRepository.getAll();
-    Materiales material = this.materialesRepository.findById(dto.material().getId()).orElse(new Materiales());
+    Materiales material = new Materiales(); // costo 0 por defecto
+    if (dto.material() != null && dto.material().getId() != null) {
+      material = this.materialesRepository
+        .findById(dto.material().getId())
+        .orElse(new Materiales());
+    }
+
     Impresoras impresora = this.impresorasRepository.findById(dto.impresora().getId()).orElse(new Impresoras());
 
     // CALCULAR Costo Materiales
     costoBase += material.getPrecioCosto() * dto.cantidad();
-    // CALCULAR Costo Materiales
 
     // CALCULAR Amortizacion Impresora
     costoBase += impresora.getAmortizacion() * dto.hsImpresion();
-    // CALCULAR Amortizacion Impresora
-
-
 
     // CALCULAR GASTOS FIJOS, Mano de obra y costo de electricidad
     for(Ajustes a : ajustes){
       int gasto = a.getGasto();
       if(a.getNombre().equals("Mano de obra")){
-        precioFinal += (int)(a.getGasto() * dto.hsManoObra());
+        precioFinal += (int)(gasto * dto.hsManoObra());
       }
       else if(a.getNombre().equals("kWh")){
-        costoBase += (int)( (impresora.getWatts()/1000.0) * (a.getGasto()/26/8) * dto.hsImpresion());
+        costoBase += (int)( (impresora.getWatts()/1000.0) * (gasto / 26.0 / 8.0) * dto.hsImpresion());
+        gastos += (int)(gasto / 26.0 / 8.0);
       }
       else{
         switch (a.getPeriodo()) {
-          case "Diario":
-            gasto /= 8;
-            break;
-          case "Semanal":
-            gasto = (gasto/6) /8;
-            break;
-          case "Mensual":
-            gasto = (gasto/12) / 26 / 8;
-            break;
-          case "Anual":
-              gasto = (gasto/26) /8;
-            break;
+          case "Hora" -> gasto *= 1;
+          case "Diario" -> gasto /= 8;
+          case "Semanal" -> gasto = (int)((gasto/6.0)/8.0);
+          case "Mensual" -> gasto = (int)(gasto / 26.0 / 8.0);
+          case "Anual" -> gasto = (int)(((gasto/12.0) /26.0) /8.0);
+          default -> throw new IllegalArgumentException("Período desconocido: " + a.getPeriodo());
         }
         gastos += gasto;
       }

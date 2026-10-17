@@ -1,84 +1,70 @@
 package com.abgraphicdesing.view.ui;
 
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.function.Consumer;
 
-import javafx.geometry.Insets;
-import javafx.geometry.Pos;
+import com.abgraphicdesing.model.dto.ImpresorasResDto;
+
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import com.abgraphicdesing.model.dto.ImpresorasResDto;
 
-public class ImpresorasResumeCard extends VBox{
-  public ImpresorasResumeCard(ImpresorasResDto data){
-    setPrefHeight(150);
-    setPrefWidth(250);
-    VBox cardContainer = new VBox(8);
+public class ImpresorasResumeCard extends VBox {
+  private static final String SELECTED = "printer-card-selected";
+  private static final NumberFormat MONEDA =
+    NumberFormat.getIntegerInstance(Locale.forLanguageTag("es-AR"));
 
-    HBox marcaContainer = new HBox();
-    HBox modeloContainer = new HBox();
-    VBox dataContainer = new VBox(); 
-    HBox rowImpresoraTipo = new HBox();
-    HBox rowCostoHora = new HBox();
+  private final ImpresorasResDto data;
 
-    Region spacingTipo = new Region();
-    HBox.setHgrow(spacingTipo, Priority.ALWAYS);
-    Region spacingCosto = new Region();
-    HBox.setHgrow(spacingCosto, Priority.ALWAYS);
+  public ImpresorasResumeCard(ImpresorasResDto data, Consumer<ImpresorasResDto> onClick) {
+    super(6);
+    this.data = data;
+    getStyleClass().add("printer-card");
+    setPrefWidth(230);
+    setMaxWidth(230);
 
-    Label marca = new Label(data.marca());
-    Label modelo = new Label(data.modelo());
-    Label impresoraTipo = new Label("tipo: ");
-    Label impresoraTipoGet = new Label(String.valueOf(data.tipo())); 
-    Label costoHora = new Label("Costo hora: ");
-    Label costoHoraGet = new Label(String.valueOf(data.precioCompra())); //nos falto calcular el precio de costo jeje
+    // Marca como "badge"
+    Label marca = new Label(data.marca() == null ? "" : data.marca().toUpperCase());
+    marca.getStyleClass().add("brand-badge");
+    HBox cabecera = new HBox(marca);
 
-    rowImpresoraTipo.setSpacing(10);
-    rowCostoHora.setSpacing(10);
+    // Modelo como título
+    Label titulo = new Label(data.modelo());
+    titulo.getStyleClass().add("printer-card-title");
 
-
-    impresoraTipo.getStyleClass().add("presentationLabel");
-    costoHora.getStyleClass().add("presentationLabel");
-
-    impresoraTipoGet.getStyleClass().add("dataLabel");
-    costoHoraGet.getStyleClass().add("dataLabel");
-
-    rowImpresoraTipo.getChildren().addAll(
-      impresoraTipo,
-      spacingTipo,
-      impresoraTipoGet
+    getChildren().addAll(
+      cabecera,
+      titulo,
+      fila("Tipo:", data.tipo()),
+      fila("Costo Hora:", "$" + MONEDA.format(data.amortizacion()))
     );
 
-    rowCostoHora.getChildren().addAll(
-      costoHora,
-      spacingCosto,
-      costoHoraGet
-    );
+    setOnMouseClicked(e -> onClick.accept(data));
+  }
 
-    marcaContainer.getChildren().add(marca);
-    marcaContainer.getStyleClass().add("marcaContainerTitle");
-    marca.getStyleClass().add("marcaTitle");
+  /** Etiqueta a la izquierda, valor a la derecha. */
+  private HBox fila(String etiqueta, String valor) {
+    Label izq = new Label(etiqueta);
+    izq.getStyleClass().add("printer-row-label");
+    Label der = new Label(valor);
+    der.getStyleClass().add("printer-row-value");
+    Region espacio = new Region();
+    HBox.setHgrow(espacio, Priority.ALWAYS);
+    return new HBox(izq, espacio, der);
+  }
 
-    modeloContainer.getChildren().add(modelo);
-    modelo.getStyleClass().add("modeloTitle");
+  public ImpresorasResDto getData() {
+    return data;
+  }
 
-
-    dataContainer.getChildren().addAll(
-      rowImpresoraTipo,
-      rowCostoHora
-    );
-
-    dataContainer.getStyleClass().add("dataContainer");
-    cardContainer.setPadding(new Insets(10));
-    cardContainer.setAlignment(Pos.CENTER);
-    cardContainer.getStyleClass().add("dataContainerCard");
-    cardContainer.getChildren().addAll(
-      marcaContainer,
-      modeloContainer,
-      dataContainer
-    );
-
-    getChildren().add(cardContainer);
+  /** Agrega o quita el borde azul. */
+  public void setSelected(boolean seleccionada) {
+    getStyleClass().remove(SELECTED); // evita duplicados
+    if (seleccionada) {
+      getStyleClass().add(SELECTED);
+    }
   }
 }
