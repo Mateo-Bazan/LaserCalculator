@@ -8,6 +8,22 @@
   -fx-background-color: #eef1f6;
 }
 
+/* ===== Resultado de la calculadora ===== */
+.result-box {
+  -fx-background-color: white;
+  -fx-border-color: #4b5563;
+  -fx-border-width: 1;
+  -fx-border-radius: 8;
+  -fx-background-radius: 8;
+  -fx-padding: 12 16 12 16;
+}
+
+.result-label {
+  -fx-font-size: 14px;
+  -fx-font-weight: bold;
+  -fx-text-fill: #111827;
+}
+
 /* ===== Barra de navegacion ===== */
 .navigation-bar {
   -fx-background-color: white;

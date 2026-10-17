@@ -1,20 +1,16 @@
 package com.abgraphicdesing;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-
 import com.abgraphicdesing.controller.AjustesController;
+import com.abgraphicdesing.controller.CalculosController;
 import com.abgraphicdesing.controller.ImpresorasController;
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.database.InitializerDatabase;
 import com.abgraphicdesing.repository.AjustesRepository;
 import com.abgraphicdesing.repository.ImpresorasRepository;
 import com.abgraphicdesing.service.AjustesService;
+import com.abgraphicdesing.service.CalculosService;
 import com.abgraphicdesing.service.ImpresorasService;
 import com.abgraphicdesing.view.MainView;
-import com.abgraphicdesing.scripts.SeederScript;
 
 import com.abgraphicdesing.controller.MaterialesController;
 import com.abgraphicdesing.service.MaterialesService;
@@ -77,9 +73,11 @@ public class App extends Application{
     PeriodosService perService = new PeriodosService(perRepository);
     PeriodosController perController = new PeriodosController(perService);
 
+    CalculosService calService = new CalculosService(ajuRepository, matRepository, impRepository);
+    CalculosController calController = new CalculosController(calService);
 
 
-    MainView mainView = new MainView(impController, matController, ajuController, perController);
+    MainView mainView = new MainView(impController, matController, ajuController, perController, calController);
     Scene scene = new Scene(mainView, 1200, 800);
 
 
@@ -88,7 +86,7 @@ public class App extends Application{
       getClass().getResource("/css/styles.css").toExternalForm()
     );
 
-    primaryStage.setTitle("AB Graphic Design App");
+    primaryStage.setTitle("AB Graphic Desing App");
     primaryStage.setScene(scene);
     primaryStage.show();
   }

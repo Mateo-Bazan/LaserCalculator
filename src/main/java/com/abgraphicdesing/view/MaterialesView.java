@@ -2,10 +2,11 @@ package com.abgraphicdesing.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.abgraphicdesing.controller.MaterialesController;
-import com.abgraphicdesing.model.entity.Materiales;
+import com.abgraphicdesing.model.dto.MaterialesResDto;
 import com.abgraphicdesing.view.ui.MaterialDialog;
 import com.abgraphicdesing.view.util.Format;
 
@@ -20,7 +21,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
 import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableRow;
@@ -39,7 +39,7 @@ public class MaterialesView extends VBox {
   private static final int STOCK_AMARILLO_MAX = 15;
 
   private final MaterialesController controller;
-  private final TableView<Materiales> tabla = new TableView<>();
+  private final TableView<MaterialesResDto> tabla = new TableView<>();
   private final TextField txtBuscar = new TextField();
   private final Label status = new Label();
   private final Label footerCount = new Label();
@@ -47,8 +47,8 @@ public class MaterialesView extends VBox {
   private final Button btnNext = new Button(">");
   private final Label lblPagina = new Label("1");
 
-  private final List<Materiales> todos = new ArrayList<>();
-  private List<Materiales> filtrados = new ArrayList<>();
+  private final List<MaterialesResDto> todos = new ArrayList<>();
+  private List<MaterialesResDto> filtrados = new ArrayList<>();
   private int pagina = 0;
 
   private final Button btnAgregar = new Button("Agregar");
@@ -135,7 +135,7 @@ public class MaterialesView extends VBox {
   // ---------- Columnas ----------
 
   private void configurarColumnas() {
-    TableColumn<Materiales, Materiales> colNombre = new TableColumn<>("Nombre");
+    TableColumn<MaterialesResDto, MaterialesResDto> colNombre = new TableColumn<>("Nombre");
     colNombre.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue()));
     colNombre.setCellFactory(c -> new TableCell<>() {
       private final HBox acciones = new HBox(8);
@@ -150,18 +150,18 @@ public class MaterialesView extends VBox {
       }
 
       @Override
-      protected void updateItem(Materiales item, boolean empty) {
+      protected void updateItem(MaterialesResDto item, boolean empty) {
         super.updateItem(item, empty);
         if (empty || item == null) {
           setGraphic(null);
           return;
         }
-        Label nombre = new Label(Format.texto(item.getNombre()));
+        Label nombre = new Label(Format.texto(item.nombre()));
         HBox fila = new HBox(8, nombre, acciones);
         fila.setAlignment(Pos.CENTER_LEFT);
         HBox.setHgrow(nombre, Priority.ALWAYS);
 
-        TableRow<Materiales> row = getTableRow();
+        TableRow<MaterialesResDto> row = getTableRow();
         if (row != null) {
           acciones.visibleProperty().unbind();
           acciones.visibleProperty().bind(
@@ -173,17 +173,17 @@ public class MaterialesView extends VBox {
       }
     });
 
-    TableColumn<Materiales, String> colCompra = new TableColumn<>("Precio de Compra");
+    TableColumn<MaterialesResDto, String> colCompra = new TableColumn<>("Precio de Compra");
     colCompra.setCellValueFactory(d ->
-      new ReadOnlyObjectWrapper<>(Format.moneda(d.getValue().getPrecioCompra())));
+      new ReadOnlyObjectWrapper<>(Format.moneda(d.getValue().precioCompra())));
 
-    TableColumn<Materiales, String> colMerma = new TableColumn<>("Merma");
+    TableColumn<MaterialesResDto, String> colMerma = new TableColumn<>("Merma");
     colMerma.setCellValueFactory(d ->
-      new ReadOnlyObjectWrapper<>(d.getValue().getMerma() + "%"));
+      new ReadOnlyObjectWrapper<>(d.getValue().merma() + "%"));
 
-    TableColumn<Materiales, String> colCosto = new TableColumn<>("Precio de Costo");
+    TableColumn<MaterialesResDto, String> colCosto = new TableColumn<>("Precio de Costo");
     colCosto.setCellValueFactory(d ->
-      new ReadOnlyObjectWrapper<>(Format.moneda(d.getValue().getPrecioCosto())));
+      new ReadOnlyObjectWrapper<>(Format.moneda(d.getValue().precioCosto())));
     colCosto.setCellFactory(c -> new TableCell<>() {
       @Override
       protected void updateItem(String item, boolean empty) {
@@ -200,24 +200,24 @@ public class MaterialesView extends VBox {
       }
     });
 
-    TableColumn<Materiales, String> colDim = new TableColumn<>("Dimensiones");
+    TableColumn<MaterialesResDto, String> colDim = new TableColumn<>("Dimensiones");
     colDim.setCellValueFactory(d -> {
-      String v = d.getValue().getDimensiones();
+      String v = d.getValue().dimensiones();
       return new ReadOnlyObjectWrapper<>(Format.texto(v));
     });
 
-    TableColumn<Materiales, Materiales> colStock = new TableColumn<>("Stock");
+    TableColumn<MaterialesResDto, MaterialesResDto> colStock = new TableColumn<>("Stock");
     colStock.setCellValueFactory(d -> new ReadOnlyObjectWrapper<>(d.getValue()));
     colStock.setCellFactory(c -> new TableCell<>() {
       @Override
-      protected void updateItem(Materiales item, boolean empty) {
+      protected void updateItem(MaterialesResDto item, boolean empty) {
         super.updateItem(item, empty);
         if (empty || item == null) {
           setGraphic(null);
           return;
         }
         Label pill = new Label();
-        int stock = item.getStock();
+        int stock = item.stock();
         if (stock <= 0) {
           pill.setText("Sin Stock");
           pill.getStyleClass().add("stock-pill-red");
@@ -268,7 +268,7 @@ public class MaterialesView extends VBox {
       filtrados = new ArrayList<>(todos);
     } else {
       filtrados = todos.stream()
-        .filter(m -> m.getNombre() != null && m.getNombre().toLowerCase().contains(q))
+        .filter(m -> m.nombre() != null && m.nombre().toLowerCase().contains(q))
         .collect(Collectors.toList());
     }
     int maxPagina = Math.max(0, (filtrados.size() - 1) / PAGE_SIZE);
@@ -279,7 +279,7 @@ public class MaterialesView extends VBox {
   private void repintarPagina() {
     int desde = pagina * PAGE_SIZE;
     int hasta = Math.min(desde + PAGE_SIZE, filtrados.size());
-    List<Materiales> paginaActual = desde < hasta
+    List<MaterialesResDto> paginaActual = desde < hasta
       ? filtrados.subList(desde, hasta) : List.of();
     tabla.setItems(FXCollections.observableArrayList(paginaActual));
 
@@ -302,25 +302,25 @@ public class MaterialesView extends VBox {
       ));
   }
 
-  private void onEditar(Materiales item) {
+  private void onEditar(MaterialesResDto item) {
     new MaterialDialog(item).showAndWait().ifPresent(dto ->
       controller.update(
-        item.getId(), dto,
+        item.id(), dto,
         actualizado -> Platform.runLater(this::cargarMateriales),
         err -> Platform.runLater(() ->
           status.setText("No se pudo actualizar el material."))
       ));
   }
 
-  private void onEliminar(Materiales item) {
+  private void onEliminar(MaterialesResDto item) {
     Alert confirmar = new Alert(AlertType.CONFIRMATION,
-      "¿Eliminar \"" + item.getNombre() + "\"?",
+      "¿Eliminar \"" + item.nombre() + "\"?",
       ButtonType.OK, ButtonType.CANCEL);
     confirmar.setHeaderText(null);
     confirmar.showAndWait()
       .filter(r -> r == ButtonType.OK)
       .ifPresent(r -> controller.delete(
-        item.getId(),
+        item.id(),
         msg -> Platform.runLater(this::cargarMateriales),
         err -> Platform.runLater(() ->
           status.setText("No se pudo eliminar el material."))

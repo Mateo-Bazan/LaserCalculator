@@ -2,8 +2,6 @@ package com.abgraphicdesing.view;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.PeriodosController;
@@ -116,7 +114,7 @@ public class AjustesView extends VBox {
         filaAjustes.clear();
         filas.getChildren().clear();
         if (lista != null) {
-          for (Ajustes a : lista) {
+          for (AjustesResDto a : lista) {
             FilaAjuste fila = new FilaAjuste(a, this::onEliminar, this::actualizarEstado);
             filaAjustes.add(fila);
             filas.getChildren().add(fila);
@@ -193,18 +191,18 @@ public class AjustesView extends VBox {
   // ---------- Fila ----------
 
   private static class FilaAjuste extends HBox {
-    private final Ajustes ajuste;
+    private final AjustesResDto ajuste;
     private final TextField txtGasto = new TextField();
     private final int gastoOriginal;
 
-    FilaAjuste(Ajustes ajuste, java.util.function.Consumer<FilaAjuste> onEliminar,
+    FilaAjuste(AjustesResDto ajuste, java.util.function.Consumer<FilaAjuste> onEliminar,
         Runnable onCambio) {
       super(12);
       this.ajuste = ajuste;
-      this.gastoOriginal = ajuste.getGasto();
+      this.gastoOriginal = ajuste.gasto();
       setAlignment(Pos.CENTER_LEFT);
 
-      Label nombre = new Label(Format.texto(ajuste.getNombre()));
+      Label nombre = new Label(Format.texto(ajuste.nombre()));
       nombre.getStyleClass().add("ajuste-name");
       nombre.setMaxWidth(420);
       nombre.setWrapText(true);
@@ -212,7 +210,7 @@ public class AjustesView extends VBox {
       Region spacer = new Region();
       HBox.setHgrow(spacer, Priority.ALWAYS);
 
-      txtGasto.setText(Format.miles(ajuste.getGasto()));
+      txtGasto.setText(Format.miles(ajuste.gasto()));
       txtGasto.getStyleClass().add("form-input");
       txtGasto.setPrefWidth(200);
       txtGasto.setMaxWidth(200);
@@ -224,7 +222,7 @@ public class AjustesView extends VBox {
         onCambio.run();
       });
 
-      Label pill = new Label(formatoPeriodo(ajuste.getPeriodo()));
+      Label pill = new Label(formatoPeriodo(ajuste.periodo()));
       pill.getStyleClass().add("unit-pill");
 
       Button del = new Button("🗑");
@@ -259,18 +257,18 @@ public class AjustesView extends VBox {
     }
 
     int getAjusteId() {
-      return ajuste.getId();
+      return ajuste.id();
     }
 
     String getNombre() {
-      return ajuste.getNombre();
+      return ajuste.nombre();
     }
 
     com.abgraphicdesing.model.dto.AjustesReqDto comoDto() {
       return new com.abgraphicdesing.model.dto.AjustesReqDto(
-        ajuste.getNombre(),
+        ajuste.nombre(),
         valorActual(),
-        ajuste.getIdPeriodo());
+        ajuste.idPeriodo());
     }
   }
 }
