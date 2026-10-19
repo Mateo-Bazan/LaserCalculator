@@ -1,5 +1,6 @@
 package com.abgraphicdesing.view.ui;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -22,8 +23,8 @@ import javafx.scene.layout.VBox;
 
 /**
  * Panel de alta/edicion de impresora segun la referencia (grid de 3 columnas
- * + GUARDAR / CANCELAR). En edicion el tipo se conserva (el backend lo ignora
- * en el merge) y se muestra deshabilitado.
+ * + GUARDAR / CANCELAR). En edicion los campos se precargan con los datos
+ * de la impresora y el tipo puede cambiarse (el backend lo aplica en merge).
  */
 public class ImpresoraFormPanel extends VBox {
 
@@ -37,18 +38,19 @@ public class ImpresoraFormPanel extends VBox {
   private final TextField txtPrecioCompra = new TextField();
   private final Label error = new Label();
 
-  private final boolean modoEdicion;
+  private final TiposLookup tiposLookup = new TiposLookup();
   private final Map<String, Integer> tiposConocidos;
   private Consumer<ImpresorasReqDto> onGuardar = dto -> { };
   private Runnable onCancelar = () -> { };
 
-  public ImpresoraFormPanel(List<String> tipos, ImpresorasResDto existente) {
-    this.modoEdicion = existente != null;
-    this.tiposConocidos = new TiposLookup().cargar();
+  public ImpresoraFormPanel(ImpresorasResDto existente) {
+    this.tiposConocidos = tiposLookup.cargar();
 
-    cbTipo.setEditable(true);
-    cbTipo.getItems().setAll(tipos);
+    cbTipo.setEditable(false);
+    cbTipo.getItems().setAll(tiposConocidos.keySet());
     cbTipo.setMaxWidth(Double.MAX_VALUE);
+    cbTipo.setPromptText(
+      tiposConocidos.isEmpty() ? "No hay tipos en la base" : "Elegí un tipo");
 
     txtMarca.setPromptText("Marca...");
     txtModelo.setPromptText("Modelo...");
@@ -70,11 +72,10 @@ public class ImpresoraFormPanel extends VBox {
       txtModelo.setText(orEmpty(existente.modelo()));
       txtTitulo.setText(orEmpty(existente.titulo()));
       cbTipo.setValue(existente.tipo());
-      cbTipo.setDisable(true);
       txtVidaUtil.setText(String.valueOf(existente.vidaUtil()));
       txtWatts.setText(String.valueOf(existente.watts()));
-      txtPrecioRepuesto.setText(String.valueOf(existente.precioRespuesto()));
-      txtPrecioCompra.setText(String.valueOf(existente.precioCompra()));
+      txtPrecioRepuesto.setText(formatearDecimal(existente.precioRespuesto()));
+      txtPrecioCompra.setText(formatearDecimal(existente.precioCompra()));
     }
 
     GridPane grid = new GridPane();
@@ -92,8 +93,8 @@ public class ImpresoraFormPanel extends VBox {
     grid.add(campo("Modelo", txtModelo), 1, 0);
     grid.add(campo("Título", txtTitulo), 2, 0);
     grid.add(campo("Tipo", cbTipo), 0, 1);
-    grid.add(campo("Vida útil", txtVidaUtil), 1, 1);
-    grid.add(campo("Gasto energético", txtWatts), 2, 1);
+    grid.add(campo("Vida útil (hs)", txtVidaUtil), 1, 1);
+    grid.add(campo("Gasto energético (W)", txtWatts), 2, 1);
     grid.add(campo("Precio de repuestos", txtPrecioRepuesto), 0, 2);
     grid.add(campo("Precio de Compra", txtPrecioCompra), 1, 2);
 
@@ -106,6 +107,7 @@ public class ImpresoraFormPanel extends VBox {
 
     error.getStyleClass().add("form-error");
     error.setVisible(false);
+    error.setManaged(false);
     error.setWrapText(true);
 
     btnGuardar.setOnAction(e -> intentarGuardar());
@@ -128,8 +130,49 @@ public class ImpresoraFormPanel extends VBox {
     return s == null ? "" : s;
   }
 
+  // ---------- Numeros ----------
+
+  /**
+   * Float -> texto legible: sin notacion cientifica y con coma decimal
+   * (15000000 en vez de 1.5E7, 1,5 en vez de 1.5).
+   */
+  private static String formatearDecimal(float valor) {
+    return new BigDecimal(Float.toString(valor))
+      .stripTrailingZeros()
+      .toPlainString()
+      .replace('.', ',');
+  }
+
+  /**
+   * Texto -> entero. Acepta separador de miles con punto ("1.500" = 1500).
+   * Lanza NumberFormatException si no es un entero valido (o es negativo).
+   */
+  private static int parsearEntero(String texto) {
+    String t = texto.trim().replace(".", "");
+    if (!t.matches("\\d+")) throw new NumberFormatException(texto);
+    return Integer.parseInt(t);
+  }
+
+  /**
+   * Texto -> decimal, pensado para es-AR:
+   * "1.500,50" -> 1500.5 | "1500,5" -> 1500.5 | "1.500" -> 1500 | "12.5" -> 12.5
+   * Lanza NumberFormatException si no es valido (o es negativo).
+   */
+  private static float parsearDecimal(String texto) {
+    String t = texto.trim().replace("$", "").replace(" ", "");
+    if (t.contains(",")) {
+      t = t.replace(".", "").replace(",", ".");       // coma = decimal
+    } else if (t.matches("\\d{1,3}(\\.\\d{3})+")) {
+      t = t.replace(".", "");                          // puntos = miles
+    }
+    if (!t.matches("\\d+(\\.\\d+)?")) throw new NumberFormatException(texto);
+    return Float.parseFloat(t);
+  }
+
+  // ---------- Guardado ----------
+
   private void intentarGuardar() {
-    error.setVisible(false);
+    ocultarError();
 
     String marca = txtMarca.getText().trim();
     String modelo = txtModelo.getText().trim();
@@ -144,30 +187,23 @@ public class ImpresoraFormPanel extends VBox {
     int vidaUtil, watts;
     float precioRepuesto, precioCompra;
     try {
-      vidaUtil = Integer.parseInt(txtVidaUtil.getText().trim());
-      watts = Integer.parseInt(txtWatts.getText().trim());
-      precioRepuesto = Float.parseFloat(txtPrecioRepuesto.getText().trim());
-      precioCompra = Float.parseFloat(txtPrecioCompra.getText().trim());
-      if (vidaUtil <= 0 || watts < 0 || precioRepuesto < 0 || precioCompra < 0) {
-        throw new NumberFormatException();
-      }
+      vidaUtil = parsearEntero(txtVidaUtil.getText());
+      watts = parsearEntero(txtWatts.getText());
+      precioRepuesto = parsearDecimal(txtPrecioRepuesto.getText());
+      precioCompra = parsearDecimal(txtPrecioCompra.getText());
+      if (vidaUtil <= 0) throw new NumberFormatException("vida util");
     } catch (NumberFormatException ex) {
-      mostrarError("Vida útil, gasto energético y precios deben ser números válidos (vida útil mayor a 0).");
+      mostrarError("Vida útil, gasto energético y precios deben ser números válidos "
+        + "(la vida útil debe ser mayor a 0).");
       return;
     }
 
-    int idTipo;
-    if (modoEdicion) {
-      idTipo = 0; // el backend conserva el tipo existente en la edicion
-    } else {
-      var resuelto = new TiposLookup().idPara(tiposConocidos, tipo);
-      if (resuelto.isEmpty()) {
-        mostrarError("El tipo \"" + tipo + "\" no existe en el catálogo y el backend "
-          + "no permite crear tipos nuevos: elegí uno de la lista.");
-        return;
-      }
-      idTipo = resuelto.get();
+    var resuelto = tiposLookup.idPara(tiposConocidos, tipo);
+    if (resuelto.isEmpty()) {
+      mostrarError("Elegí un tipo de la lista.");
+      return;
     }
+    int idTipo = resuelto.get();
 
     onGuardar.accept(new ImpresorasReqDto(
       idTipo, marca, modelo, titulo, vidaUtil, watts, precioCompra, precioRepuesto));
@@ -176,6 +212,12 @@ public class ImpresoraFormPanel extends VBox {
   private void mostrarError(String mensaje) {
     error.setText(mensaje);
     error.setVisible(true);
+    error.setManaged(true);
+  }
+
+  private void ocultarError() {
+    error.setVisible(false);
+    error.setManaged(false);
   }
 
   public void setOnGuardar(Consumer<ImpresorasReqDto> action) {

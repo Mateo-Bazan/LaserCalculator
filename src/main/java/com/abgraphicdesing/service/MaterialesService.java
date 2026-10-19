@@ -22,9 +22,6 @@ public class MaterialesService {
 
   public List<MaterialesResDto> getAll() throws SQLException {
     List<MaterialesResDto> materialesList = this.repository.getAll().stream().map(MaterialesResDto::new).toList();
-    if(materialesList.isEmpty()){
-      return null;
-    }
     return materialesList;
   }
 

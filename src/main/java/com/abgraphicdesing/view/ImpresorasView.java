@@ -125,21 +125,11 @@ public class ImpresorasView extends VBox {
     }
   }
 
-  private List<String> tiposConocidos() {
-    List<String> tipos = new ArrayList<>();
-    for (ImpresorasResDto dto : cache) {
-      if (dto.tipo() != null && !dto.tipo().isBlank() && !tipos.contains(dto.tipo())) {
-        tipos.add(dto.tipo());
-      }
-    }
-    return tipos;
-  }
-
   // ---------- Formulario ----------
 
   private void mostrarFormulario(ImpresorasResDto existente) {
     formSlot.getChildren().clear();
-    ImpresoraFormPanel form = new ImpresoraFormPanel(tiposConocidos(), existente);
+    ImpresoraFormPanel form = new ImpresoraFormPanel(existente);
     form.setOnCancelar(() -> formSlot.getChildren().clear());
     if (existente == null) {
       form.setOnGuardar(dto -> guardarCreacion(dto));
