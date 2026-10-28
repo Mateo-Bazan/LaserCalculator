@@ -1,13 +1,18 @@
 package com.abgraphicdesing.view.ui;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
+import com.abgraphicdesing.controller.TiposController;
 import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
-import com.abgraphicdesing.view.util.TiposLookup;
+import com.abgraphicdesing.model.dto.TiposResDto;
+
+import javafx.application.Platform;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -38,19 +43,39 @@ public class ImpresoraFormPanel extends VBox {
   private final TextField txtPrecioCompra = new TextField();
   private final Label error = new Label();
 
-  private final TiposLookup tiposLookup = new TiposLookup();
-  private final Map<String, Integer> tiposConocidos;
+  private final Map<String, Integer> tiposConocidos = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private Consumer<ImpresorasReqDto> onGuardar = dto -> { };
   private Runnable onCancelar = () -> { };
 
-  public ImpresoraFormPanel(ImpresorasResDto existente) {
-    this.tiposConocidos = tiposLookup.cargar();
-
+  public ImpresoraFormPanel(ImpresorasResDto existente, TiposController tiposController) {
     cbTipo.setEditable(false);
-    cbTipo.getItems().setAll(tiposConocidos.keySet());
     cbTipo.setMaxWidth(Double.MAX_VALUE);
-    cbTipo.setPromptText(
-      tiposConocidos.isEmpty() ? "No hay tipos en la base" : "Elegí un tipo");
+    cbTipo.setPromptText("Cargando tipos...");
+
+    if (tiposController != null) {
+      tiposController.getAll(
+        lista -> Platform.runLater(() -> {
+          tiposConocidos.clear();
+          if (lista != null) {
+            for (TiposResDto t : lista) {
+              if (t != null && t.tipo() != null && !t.tipo().isBlank()) {
+                tiposConocidos.put(t.tipo().trim(), t.id());
+              }
+            }
+          }
+          cbTipo.getItems().setAll(tiposConocidos.keySet());
+          cbTipo.setPromptText(tiposConocidos.isEmpty() ? "No hay tipos en la base" : "Elegí un tipo");
+          if (existente != null) {
+            cbTipo.setValue(existente.tipo());
+          }
+        }),
+        err -> Platform.runLater(() -> {
+          cbTipo.setPromptText("No hay tipos en la base");
+        })
+      );
+    } else {
+      cbTipo.setPromptText("No hay tipos en la base");
+    }
 
     txtMarca.setPromptText("Marca...");
     txtModelo.setPromptText("Modelo...");
@@ -71,11 +96,14 @@ public class ImpresoraFormPanel extends VBox {
       txtMarca.setText(orEmpty(existente.marca()));
       txtModelo.setText(orEmpty(existente.modelo()));
       txtTitulo.setText(orEmpty(existente.titulo()));
-      cbTipo.setValue(existente.tipo());
       txtVidaUtil.setText(String.valueOf(existente.vidaUtil()));
       txtWatts.setText(String.valueOf(existente.watts()));
       txtPrecioRepuesto.setText(formatearDecimal(existente.precioRespuesto()));
       txtPrecioCompra.setText(formatearDecimal(existente.precioCompra()));
+      // El valor se setea tras cargar tipos si es necesario
+      if (cbTipo.getItems().contains(existente.tipo())) {
+        cbTipo.setValue(existente.tipo());
+      }
     }
 
     GridPane grid = new GridPane();
@@ -198,12 +226,21 @@ public class ImpresoraFormPanel extends VBox {
       return;
     }
 
-    var resuelto = tiposLookup.idPara(tiposConocidos, tipo);
-    if (resuelto.isEmpty()) {
+    Integer resuelto = tiposConocidos.get(tipo);
+    if (resuelto == null) {
+      // Buscar case-insensitive
+      for (Map.Entry<String, Integer> entry : tiposConocidos.entrySet()) {
+        if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(tipo)) {
+          resuelto = entry.getValue();
+          break;
+        }
+      }
+    }
+    if (resuelto == null) {
       mostrarError("Elegí un tipo de la lista.");
       return;
     }
-    int idTipo = resuelto.get();
+    int idTipo = resuelto;
 
     onGuardar.accept(new ImpresorasReqDto(
       idTipo, marca, modelo, titulo, vidaUtil, watts, precioCompra, precioRepuesto));

@@ -3,13 +3,16 @@ package com.abgraphicdesing;
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.CalculosController;
 import com.abgraphicdesing.controller.ImpresorasController;
+import com.abgraphicdesing.controller.TiposController;
 import com.abgraphicdesing.database.DbConfig;
 import com.abgraphicdesing.database.InitializerDatabase;
 import com.abgraphicdesing.repository.AjustesRepository;
 import com.abgraphicdesing.repository.ImpresorasRepository;
+import com.abgraphicdesing.repository.TiposRepository;
 import com.abgraphicdesing.service.AjustesService;
 import com.abgraphicdesing.service.CalculosService;
 import com.abgraphicdesing.service.ImpresorasService;
+import com.abgraphicdesing.service.TiposService;
 import com.abgraphicdesing.view.MainView;
 
 import com.abgraphicdesing.controller.MaterialesController;
@@ -61,6 +64,10 @@ public class App extends Application{
     ImpresorasService impService = new ImpresorasService(impRepository);
     ImpresorasController impController = new ImpresorasController(impService);
 
+    TiposRepository tiposRepository = new TiposRepository(configDb);
+    TiposService tiposService = new TiposService(tiposRepository);
+    TiposController tiposController = new TiposController(tiposService);
+
     MaterialesRepository matRepository = new MaterialesRepository(configDb);
     MaterialesService matService = new MaterialesService(matRepository);
     MaterialesController matController = new MaterialesController(matService);
@@ -77,7 +84,7 @@ public class App extends Application{
     CalculosController calController = new CalculosController(calService);
 
 
-    MainView mainView = new MainView(impController, matController, ajuController, perController, calController);
+    MainView mainView = new MainView(impController, matController, ajuController, perController, calController, tiposController);
     Scene scene = new Scene(mainView, 1200, 800);
 
 

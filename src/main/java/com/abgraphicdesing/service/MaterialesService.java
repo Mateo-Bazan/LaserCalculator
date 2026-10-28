@@ -21,16 +21,28 @@ public class MaterialesService {
   }
 
   public List<MaterialesResDto> getAll() throws SQLException {
-    List<MaterialesResDto> materialesList = this.repository.getAll().stream().map(MaterialesResDto::new).toList();
+    java.util.List<com.abgraphicdesing.model.entity.Materiales> list = this.repository.getAll();
+    if (list == null || list.isEmpty()) {
+      return java.util.Collections.emptyList();
+    }
+    List<MaterialesResDto> materialesList = list.stream().map(MaterialesResDto::new).toList();
     return materialesList;
   }
 
+  public List<MaterialesResDto> getAllOrEmpty() throws SQLException {
+    return getAll();
+  }
+
   public Optional<MaterialesResDto> findById(UUID id) {
-    Optional<MaterialesResDto> material = this.repository.findById(id).map(MaterialesResDto::new);
+    Optional<com.abgraphicdesing.model.entity.Materiales> material = this.repository.findById(id);
     if(material.isEmpty()){
-      return null;
+      return Optional.empty();
     }
-    return material;
+    return material.map(MaterialesResDto::new);
+  }
+
+  public Optional<MaterialesResDto> findByIdOrEmpty(UUID id) {
+    return findById(id);
   }
 
   public MaterialesResDto create(MaterialesReqDto dto) throws SQLException {

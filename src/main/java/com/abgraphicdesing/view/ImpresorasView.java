@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import com.abgraphicdesing.controller.ImpresorasController;
+import com.abgraphicdesing.controller.TiposController;
 import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
 import com.abgraphicdesing.view.ui.ImpresoraFormPanel;
@@ -30,6 +31,7 @@ import javafx.scene.layout.VBox;
 public class ImpresorasView extends VBox {
 
   private final ImpresorasController controller;
+  private final TiposController tiposController;
   private final FlowPane cards = new FlowPane();
   private final VBox formSlot = new VBox();
   private final Label status = new Label();
@@ -37,8 +39,9 @@ public class ImpresorasView extends VBox {
   private final List<ImpresoraFullCard> cardNodes = new ArrayList<>();
   private UUID seleccionada = null;
 
-  public ImpresorasView(ImpresorasController controller) {
+  public ImpresorasView(ImpresorasController controller, TiposController tiposController) {
     this.controller = controller;
+    this.tiposController = tiposController;
     getStyleClass().add("app-background");
     setPadding(new Insets(28, 36, 28, 36));
     setSpacing(12);
@@ -129,7 +132,7 @@ public class ImpresorasView extends VBox {
 
   private void mostrarFormulario(ImpresorasResDto existente) {
     formSlot.getChildren().clear();
-    ImpresoraFormPanel form = new ImpresoraFormPanel(existente);
+    ImpresoraFormPanel form = new ImpresoraFormPanel(existente, tiposController);
     form.setOnCancelar(() -> formSlot.getChildren().clear());
     if (existente == null) {
       form.setOnGuardar(dto -> guardarCreacion(dto));

@@ -2,8 +2,6 @@ package com.abgraphicdesing.view;
 
 import java.text.NumberFormat;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,10 +11,10 @@ import com.abgraphicdesing.controller.MaterialesController;
 import com.abgraphicdesing.model.dto.CalculosReqDto;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
 import com.abgraphicdesing.model.dto.MaterialesResDto;
-import com.abgraphicdesing.model.entity.Impresoras;
-import com.abgraphicdesing.model.entity.Materiales;
-import com.abgraphicdesing.model.entity.Tipos;
+import com.abgraphicdesing.view.mapper.CalculatorMapper;
 import com.abgraphicdesing.view.ui.ImpresorasResumeCard;
+import com.abgraphicdesing.view.util.AppLogger;
+import com.abgraphicdesing.view.util.TimeFormatterUtil;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -131,8 +129,8 @@ public class CalcualdoraView extends HBox {
     // Fila 2: tiempos (50% / 50%)
     tiempoGrabado.setPromptText("00h 00min 00seg");
     horasManoObra.setPromptText("00h 00min 00seg");
-    aplicarFormatoTiempo(tiempoGrabado);
-    aplicarFormatoTiempo(horasManoObra);
+    TimeFormatterUtil.aplicarFormatoTiempo(tiempoGrabado);
+    TimeFormatterUtil.aplicarFormatoTiempo(horasManoObra);
     GridPane fila2 = fila(50, 50);
     fila2.add(campo("Tiempo de Grabado", tiempoGrabado), 0, 0);
     fila2.add(campo("Horas de mano de obra", horasManoObra), 1, 0);
@@ -189,39 +187,6 @@ public class CalcualdoraView extends HBox {
   }
 
   // ---------- Helpers de UI ----------
-  /** Formatea el campo solo: los dígitos entran por la derecha, como una calculadora. */
-  private void aplicarFormatoTiempo(TextField campo) {
-    campo.setTextFormatter(new TextFormatter<String>(cambio -> {
-      // Si solo se movió el cursor, no hay nada que formatear
-      if (!cambio.isContentChange()) return cambio;
-
-      String anteriores = cambio.getControlText().replaceAll("\\D", "");
-      String digitos;
-
-      if (cambio.isDeleted() && !cambio.isAdded()) {
-        // Backspace/Delete: quitamos el último dígito, sin importar qué carácter se borró
-        digitos = anteriores.isEmpty() ? "" : anteriores.substring(0, anteriores.length() - 1);
-      } else {
-        // Al escribir o pegar: nos quedamos solo con los números del texto resultante
-        digitos = cambio.getControlNewText().replaceAll("\\D", "");
-      }
-
-      digitos = digitos.replaceFirst("^0+", ""); // sacamos ceros a la izquierda
-      if (digitos.length() > 6) return null;     // máximo 99h 99min 99seg: rechazamos el cambio
-
-      String texto = "";
-      if (!digitos.isEmpty()) {
-        String d = String.format("%6s", digitos).replace(' ', '0'); // rellena con ceros a la izquierda
-        texto = d.substring(0, 2) + "h " + d.substring(2, 4) + "min " + d.substring(4, 6) + "seg";
-      }
-
-      // Reemplazamos TODO el contenido por el texto formateado y dejamos el cursor al final
-      cambio.setRange(0, cambio.getControlText().length());
-      cambio.setText(texto);
-      cambio.selectRange(texto.length(), texto.length());
-      return cambio;
-    }));
-  }
 
   /** Un GridPane con columnas de ancho porcentual. */
   private GridPane fila(double... porcentajes) {
@@ -295,7 +260,7 @@ public class CalcualdoraView extends HBox {
           container.getChildren().add(new Label("No hay impresoras"));
         }
       },
-      error -> System.out.println("Error cargando impresoras: " + error.getMessage())
+      error -> AppLogger.warn("Error cargando impresoras: " + (error == null ? "" : error.getMessage()))
     );
   }
 
@@ -306,7 +271,7 @@ public class CalcualdoraView extends HBox {
         materialCombo.getItems().add(NINGUNO);
         materialCombo.getItems().addAll(materiales);
       },
-      error -> System.out.println("Error cargando materiales: " + error.getMessage())
+      error -> AppLogger.warn("Error cargando materiales: " + (error == null ? "" : error.getMessage()))
     );
   }
 
@@ -321,8 +286,8 @@ public class CalcualdoraView extends HBox {
         throw new IllegalArgumentException("Elegí una impresora y un material.");
       }
 
-      float hsGrabado = parsearHoras(tiempoGrabado.getText(), "Tiempo de grabado");
-      float hsMano = parsearHoras(horasManoObra.getText(), "Horas de mano de obra");
+      float hsGrabado = TimeFormatterUtil.parsearHoras(tiempoGrabado.getText(), "Tiempo de grabado");
+      float hsMano = TimeFormatterUtil.parsearHoras(horasManoObra.getText(), "Horas de mano de obra");
       int cant = Integer.parseInt(cantidad.getText().trim());
       int gan = Integer.parseInt(ganancia.getText().replace("%", "").trim());
 
@@ -331,8 +296,8 @@ public class CalcualdoraView extends HBox {
 
       CalculosReqDto dto = new CalculosReqDto(
         hsMano, hsGrabado,
-        esNinguno(mat) ? null : aMaterial(mat),
-        aImpresora(imp), cant, gan);
+        esNinguno(mat) ? null : CalculatorMapper.toMaterial(mat),
+        CalculatorMapper.toImpresora(imp), cant, gan);
 
       btnCalcular.setDisable(true);
       calculosController.create(
@@ -357,36 +322,5 @@ public class CalcualdoraView extends HBox {
     }
   }
 
-  /** Convierte "01h 30min 15seg" a horas decimales (1.504...). */
-  private float parsearHoras(String texto, String campo) {
-    Pattern patron = Pattern.compile(
-      "^\\s*(?:(\\d+)\\s*h)?\\s*(?:(\\d+)\\s*min)?\\s*(?:(\\d+)\\s*seg)?\\s*$");
-    Matcher m = patron.matcher(texto == null ? "" : texto);
-    if (texto == null || texto.isBlank()) {
-      throw new IllegalArgumentException(campo + ": ingresá un tiempo.");
-    }
-    if (!m.matches()) {
-      throw new IllegalArgumentException(campo + ": formato inválido.");
-    }
-    int h = m.group(1) == null ? 0 : Integer.parseInt(m.group(1));
-    int min = m.group(2) == null ? 0 : Integer.parseInt(m.group(2));
-    int seg = m.group(3) == null ? 0 : Integer.parseInt(m.group(3));
-    if (min > 59 || seg > 59) {
-      throw new IllegalArgumentException(campo + ": minutos y segundos deben ser menores a 60.");
-    }
-    return h + min / 60f + seg / 3600f;
-  }
-
-  // ---------- ResDto -> entidad (lo que pide CalculosReqDto) ----------
-
-  private Materiales aMaterial(MaterialesResDto m) {
-    return new Materiales(
-      m.nombre(), m.precioCompra(), m.merma(), m.dimensiones(), m.stock(), m.id());
-  }
-
-  private Impresoras aImpresora(ImpresorasResDto i) {
-    return new Impresoras(
-      new Tipos(i.tipo()), i.marca(), i.modelo(), i.titulo(),
-      i.vidaUtil(), i.watts(), i.precioCompra(), i.precioRespuesto(), i.id());
-  }
+  // ---------- ResDto -> entidad (delegado en mapper) ----------
 }
