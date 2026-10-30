@@ -2,6 +2,7 @@ package com.abgraphicdesing.view;
 
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.CalculosController;
+import com.abgraphicdesing.controller.HistorialController;
 import com.abgraphicdesing.controller.ImpresorasController;
 import com.abgraphicdesing.controller.MaterialesController;
 import com.abgraphicdesing.controller.PeriodosController;
@@ -20,6 +21,7 @@ public class MainView extends BorderPane {
   private final PeriodosController periodosController;
   private final CalculosController calculosController;
   private final TiposController tiposController;
+  private final HistorialController historialController;
   private final NavigationBar navigationBar;
   private final java.util.Map<String, javafx.scene.Node> viewCache = new java.util.LinkedHashMap<>();
 
@@ -29,7 +31,8 @@ public class MainView extends BorderPane {
     AjustesController ajustesController,
     PeriodosController periodosController,
     CalculosController calculosController,
-    TiposController tiposController
+    TiposController tiposController,
+    HistorialController historialController
   ) {
     this.impresoraController = controller;
     this.materialesController = materialController;
@@ -37,6 +40,7 @@ public class MainView extends BorderPane {
     this.periodosController = periodosController;
     this.calculosController = calculosController;
     this.tiposController = tiposController;
+    this.historialController = historialController;
 
     getStyleClass().add("app-background");
 
@@ -103,7 +107,11 @@ public class MainView extends BorderPane {
     String key = "historial";
     javafx.scene.Node view = viewCache.get(key);
     if (view == null) {
-      view = buildHistorialPlaceholder();
+      try {
+        view = new com.abgraphicdesing.view.HistorialView(historialController);
+      } catch (Exception e) {
+        view = buildHistorialPlaceholder();
+      }
       viewCache.put(key, view);
     }
     show(key, view);
