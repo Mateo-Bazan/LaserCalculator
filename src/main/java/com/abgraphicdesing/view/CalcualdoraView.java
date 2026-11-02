@@ -246,21 +246,31 @@ public class CalcualdoraView extends HBox {
     });
   }
 
+  private VBox leftSideRef;
+
   private void cargarImpresoras(VBox container) {
+    this.leftSideRef = container;
+    refrescarImpresoras();
+  }
+
+  public void refrescarImpresoras() {
+    if (leftSideRef == null) return;
+    tarjetas.clear();
+    leftSideRef.getChildren().removeIf(n -> n instanceof ImpresorasResumeCard);
     impresorasController.getAll(
-      impresoras -> {
+      impresoras -> javafx.application.Platform.runLater(() -> {
         if (impresoras != null && !impresoras.isEmpty()) {
           for (ImpresorasResDto impresora : impresoras) {
             ImpresorasResumeCard card =
               new ImpresorasResumeCard(impresora, impresoraCombo::setValue);
             tarjetas.add(card);
-            container.getChildren().add(card);
+            leftSideRef.getChildren().add(card);
           }
           impresoraCombo.getItems().setAll(impresoras);
         } else {
-          container.getChildren().add(new Label("No hay impresoras"));
+          impresoraCombo.getItems().clear();
         }
-      },
+      }),
       error -> AppLogger.warn("Error cargando impresoras: " + (error == null ? "" : error.getMessage()))
     );
   }

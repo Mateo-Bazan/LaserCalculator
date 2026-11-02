@@ -141,6 +141,7 @@ public class MigrationManager {
     String[] candidates = {
       "db/migrations/V1__init_database.sql",
       "db/migrations/V2__historial_snapshot.sql",
+      "db/migrations/V3__tipos_create.sql",
       "db/V1__init_database.sql"
     };
     for (String candidate : candidates) {

@@ -24,4 +24,16 @@ public class TiposController {
       onError
     );
   }
+
+  public void create(
+    String nombre,
+    Consumer<TiposResDto> onSuccess,
+    Consumer<Throwable> onError
+  ) {
+    AsyncExecutor.execute(
+      () -> service.create(nombre),
+      onSuccess,
+      onError
+    );
+  }
 } 

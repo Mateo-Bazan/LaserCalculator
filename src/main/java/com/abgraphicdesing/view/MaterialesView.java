@@ -51,9 +51,9 @@ public class MaterialesView extends VBox {
   private List<MaterialesResDto> filtrados = new ArrayList<>();
   private int pagina = 0;
 
-  private final Button btnAgregar = new Button("Agregar");
-  private final Button btnEditar = new Button("Editar");
-  private final Button btnEliminar = new Button("Eliminar");
+  // private final Button btnAgregar = new Button("Agregar");
+  // private final Button btnEditar = new Button("Editar");
+  // private final Button btnEliminar = new Button("Eliminar");
 
   public MaterialesView(MaterialesController controller) {
     this.controller = controller;

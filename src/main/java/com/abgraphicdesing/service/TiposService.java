@@ -21,4 +21,12 @@ public class TiposService {
     }
     return tiposList;
   }
+
+  public TiposResDto create(String nombre) {
+    if (nombre == null || nombre.trim().isEmpty()) {
+      throw new IllegalArgumentException("El nombre del tipo es obligatorio");
+    }
+    com.abgraphicdesing.model.entity.Tipos tipo = repository.save(nombre.trim());
+    return new TiposResDto(tipo);
+  }
 } 

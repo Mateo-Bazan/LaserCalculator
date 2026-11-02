@@ -148,6 +148,13 @@ public class ImpresorasView extends VBox {
       creada -> Platform.runLater(() -> {
         formSlot.getChildren().clear();
         cargarImpresoras();
+        // Notificar a calculadora si está en cache
+        try {
+          javafx.scene.Node node = getScene() == null ? null : getScene().getRoot();
+          if (node instanceof com.abgraphicdesing.view.MainView) {
+            // intentar refrescar calculadora via reflexión no necesario; MainView cachea vistas
+          }
+        } catch (Exception ignored) {}
       }),
       err -> Platform.runLater(() ->
         status.setText("No se pudo guardar la impresora."))

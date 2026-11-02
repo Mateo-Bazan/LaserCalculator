@@ -69,6 +69,10 @@ public class MainView extends BorderPane {
     if (view == null) {
       view = nuevaCalculadora();
       viewCache.put(key, view);
+    } else if (view instanceof com.abgraphicdesing.view.CalcualdoraView cv) {
+      try {
+        cv.refrescarImpresoras();
+      } catch (Exception ignored) {}
     }
     show(key, view);
   }
@@ -118,7 +122,7 @@ public class MainView extends BorderPane {
   }
 
   private CalcualdoraView nuevaCalculadora() {
-    return new CalcualdoraView(impresoraController, materialesController, calculosController);
+    return new CalcualdoraView(impresoraController, materialesController, calculosController, historialController);
   }
 
   /**
