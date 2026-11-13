@@ -3,16 +3,23 @@ package com.abgraphicdesing.view.ui;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 
+import com.abgraphicdesing.controller.TiposController;
 import com.abgraphicdesing.model.dto.ImpresorasReqDto;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
-import com.abgraphicdesing.view.util.TiposLookup;
+import com.abgraphicdesing.model.dto.TiposResDto;
+
+import javafx.application.Platform;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.ColumnConstraints;
@@ -38,19 +45,22 @@ public class ImpresoraFormPanel extends VBox {
   private final TextField txtPrecioCompra = new TextField();
   private final Label error = new Label();
 
-  private final TiposLookup tiposLookup = new TiposLookup();
-  private final Map<String, Integer> tiposConocidos;
+  private final Map<String, Integer> tiposConocidos = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
   private Consumer<ImpresorasReqDto> onGuardar = dto -> { };
   private Runnable onCancelar = () -> { };
+  private TiposController tiposControllerRef;
 
-  public ImpresoraFormPanel(ImpresorasResDto existente) {
-    this.tiposConocidos = tiposLookup.cargar();
-
+  public ImpresoraFormPanel(ImpresorasResDto existente, TiposController tiposController) {
+    this.tiposControllerRef = tiposController;
     cbTipo.setEditable(false);
-    cbTipo.getItems().setAll(tiposConocidos.keySet());
     cbTipo.setMaxWidth(Double.MAX_VALUE);
-    cbTipo.setPromptText(
-      tiposConocidos.isEmpty() ? "No hay tipos en la base" : "Elegí un tipo");
+    cbTipo.setPromptText("Cargando tipos...");
+
+    if (tiposController != null) {
+      cargarTipos(tiposController, existente);
+    } else {
+      cbTipo.setPromptText("No hay tipos en la base");
+    }
 
     txtMarca.setPromptText("Marca...");
     txtModelo.setPromptText("Modelo...");
@@ -71,11 +81,14 @@ public class ImpresoraFormPanel extends VBox {
       txtMarca.setText(orEmpty(existente.marca()));
       txtModelo.setText(orEmpty(existente.modelo()));
       txtTitulo.setText(orEmpty(existente.titulo()));
-      cbTipo.setValue(existente.tipo());
       txtVidaUtil.setText(String.valueOf(existente.vidaUtil()));
       txtWatts.setText(String.valueOf(existente.watts()));
       txtPrecioRepuesto.setText(formatearDecimal(existente.precioRespuesto()));
       txtPrecioCompra.setText(formatearDecimal(existente.precioCompra()));
+      // El valor se setea tras cargar tipos si es necesario
+      if (cbTipo.getItems().contains(existente.tipo())) {
+        cbTipo.setValue(existente.tipo());
+      }
     }
 
     GridPane grid = new GridPane();
@@ -89,10 +102,17 @@ public class ImpresoraFormPanel extends VBox {
       grid.getColumnConstraints().add(cc);
     }
 
+    Button btnNuevoTipo = new Button("+");
+    btnNuevoTipo.getStyleClass().add("btn-add");
+    btnNuevoTipo.setOnAction(e -> abrirDialogoNuevoTipo());
+    HBox tipoBox = new HBox(8, cbTipo, btnNuevoTipo);
+    tipoBox.setAlignment(Pos.CENTER_LEFT);
+    HBox.setHgrow(cbTipo, Priority.ALWAYS);
+
     grid.add(campo("Marca", txtMarca), 0, 0);
     grid.add(campo("Modelo", txtModelo), 1, 0);
     grid.add(campo("Título", txtTitulo), 2, 0);
-    grid.add(campo("Tipo", cbTipo), 0, 1);
+    grid.add(campo("Tipo", tipoBox), 0, 1);
     grid.add(campo("Vida útil (hs)", txtVidaUtil), 1, 1);
     grid.add(campo("Gasto energético (W)", txtWatts), 2, 1);
     grid.add(campo("Precio de repuestos", txtPrecioRepuesto), 0, 2);
@@ -116,6 +136,88 @@ public class ImpresoraFormPanel extends VBox {
     getStyleClass().add("form-panel");
     setSpacing(16);
     getChildren().addAll(grid, error, botones);
+  }
+
+  private void cargarTipos(TiposController tiposController, ImpresorasResDto existente) {
+    tiposController.getAll(
+      lista -> Platform.runLater(() -> {
+        tiposConocidos.clear();
+        if (lista != null) {
+          for (TiposResDto t : lista) {
+            if (t != null && t.tipo() != null && !t.tipo().isBlank()) {
+              tiposConocidos.put(t.tipo().trim(), t.id());
+            }
+          }
+        }
+        cbTipo.getItems().setAll(tiposConocidos.keySet());
+        cbTipo.setPromptText(tiposConocidos.isEmpty() ? "No hay tipos en la base" : "Elegí un tipo");
+        if (existente != null) {
+          if (cbTipo.getItems().contains(existente.tipo())) {
+            cbTipo.setValue(existente.tipo());
+          }
+        }
+      }),
+      err -> Platform.runLater(() -> {
+        cbTipo.setPromptText("No hay tipos en la base");
+      })
+    );
+  }
+
+  private void abrirDialogoNuevoTipo() {
+    if (tiposControllerRef == null) {
+      Alert alert = new Alert(Alert.AlertType.ERROR, "No se puede crear tipos en este momento.", ButtonType.OK);
+      alert.showAndWait();
+      return;
+    }
+    Dialog<String> dialog = new Dialog<>();
+    dialog.setTitle("Nuevo tipo de impresora");
+    ButtonType guardar = new ButtonType("Guardar", javafx.scene.control.ButtonBar.ButtonData.OK_DONE);
+    dialog.getDialogPane().getButtonTypes().addAll(guardar, ButtonType.CANCEL);
+
+    TextField txtNuevo = new TextField();
+    txtNuevo.setPromptText("Nombre del tipo");
+    VBox box = new VBox(8, new Label("Nombre:"), txtNuevo);
+    box.setPadding(new javafx.geometry.Insets(10));
+    dialog.getDialogPane().setContent(box);
+
+    dialog.setResultConverter(btn -> {
+      if (btn == guardar) {
+        String v = txtNuevo.getText();
+        if (v == null || v.trim().isEmpty()) return null;
+        String vTrim = v.trim();
+        // Validar duplicado
+        if (tiposConocidos.containsKey(vTrim)) return "__DUPLICADO__";
+        // case-insensitive
+        for (String k : tiposConocidos.keySet()) {
+          if (k != null && k.equalsIgnoreCase(vTrim)) return "__DUPLICADO__";
+        }
+        return vTrim;
+      }
+      return null;
+    });
+
+    dialog.showAndWait().ifPresent(res -> {
+      if ("__DUPLICADO__".equals(res)) {
+        Alert alert = new Alert(Alert.AlertType.WARNING, "Ya existe un tipo con ese nombre.", ButtonType.OK);
+        alert.showAndWait();
+        return;
+      }
+      if (res != null && !res.isBlank()) {
+        tiposControllerRef.create(res.trim(), creado -> Platform.runLater(() -> {
+          if (creado != null && creado.tipo() != null) {
+            String key = creado.tipo().trim();
+            tiposConocidos.put(key, creado.id());
+            cbTipo.getItems().setAll(tiposConocidos.keySet());
+            cbTipo.setValue(key);
+            ocultarError();
+          }
+          cargarTipos(tiposControllerRef, null);
+        }), err -> Platform.runLater(() -> {
+          Alert alert = new Alert(Alert.AlertType.ERROR, "No se pudo crear el tipo.", ButtonType.OK);
+          alert.showAndWait();
+        }));
+      }
+    });
   }
 
   private VBox campo(String etiqueta, javafx.scene.Node input) {
@@ -198,12 +300,21 @@ public class ImpresoraFormPanel extends VBox {
       return;
     }
 
-    var resuelto = tiposLookup.idPara(tiposConocidos, tipo);
-    if (resuelto.isEmpty()) {
+    Integer resuelto = tiposConocidos.get(tipo);
+    if (resuelto == null) {
+      // Buscar case-insensitive
+      for (Map.Entry<String, Integer> entry : tiposConocidos.entrySet()) {
+        if (entry.getKey() != null && entry.getKey().equalsIgnoreCase(tipo)) {
+          resuelto = entry.getValue();
+          break;
+        }
+      }
+    }
+    if (resuelto == null) {
       mostrarError("Elegí un tipo de la lista.");
       return;
     }
-    int idTipo = resuelto.get();
+    int idTipo = resuelto;
 
     onGuardar.accept(new ImpresorasReqDto(
       idTipo, marca, modelo, titulo, vidaUtil, watts, precioCompra, precioRepuesto));

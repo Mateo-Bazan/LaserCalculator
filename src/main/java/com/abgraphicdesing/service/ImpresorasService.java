@@ -17,20 +17,28 @@ public class ImpresorasService{
     this.repository = repository;
   }
 
-  public Optional<ImpresorasResDto>  getOne(UUID id){
+  public Optional<ImpresorasResDto> getOne(UUID id){
     Optional<Impresoras> impresora = this.repository.findById(id);
     if(impresora.isEmpty()){
-      return null;
+      return Optional.empty();
     }
     return impresora.map(ImpresorasResDto::new);
   }
 
+  public Optional<ImpresorasResDto> getOneOrEmpty(UUID id){
+    return getOne(id);
+  }
+
   public List<ImpresorasResDto> getAll(){
     List<Impresoras> impresorasList = this.repository.getAll();
-    if(impresorasList.isEmpty()){
-      return null;
+    if(impresorasList == null || impresorasList.isEmpty()){
+      return java.util.Collections.emptyList();
     }
     return impresorasList.stream().map(ImpresorasResDto::new).toList();
+  }
+
+  public List<ImpresorasResDto> getAllOrEmpty(){
+    return getAll();
   }
 
   public ImpresorasResDto create(ImpresorasReqDto dto){

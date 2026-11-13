@@ -14,16 +14,38 @@ public class Historial {
   private int precioFinal;
   private String fechaGuardado;
 
+  // Snapshot impresora
+  private String impresoraMarca;
+  private String impresoraModelo;
+  private String impresoraTipo;
+  private String impresoraTitulo;
+  private Integer impresoraVidaUtil;
+  private Integer impresoraWatts;
+  private Double impresoraPrecioCompra;
+  private Double impresoraPrecioRepuesto;
+  private Double impresoraAmortizacion;
+
+  // Snapshot material
+  private String materialNombre;
+  private Double materialPrecioCompra;
+  private Integer materialMerma;
+  private Double materialPrecioCosto;
+  private String materialDimensiones;
+
+  // Referencias opcionales
+  private String idImpresoraRef;
+  private String idMaterialRef;
+
   public Historial(
-    UUID id, 
-    String titulo, 
-    UUID idImpresora, 
-    String tiempoGrabado, 
-    String tiempoObra, 
-    UUID idMaterial, 
-    int cantidad, 
-    int ganancia, 
-    int precioFinal, 
+    UUID id,
+    String titulo,
+    UUID idImpresora,
+    String tiempoGrabado,
+    String tiempoObra,
+    UUID idMaterial,
+    int cantidad,
+    int ganancia,
+    int precioFinal,
     String fechaGuardado) {
       this.id = id;
       this.titulo = titulo;
@@ -36,15 +58,16 @@ public class Historial {
       this.precioFinal = precioFinal;
       this.fechaGuardado = fechaGuardado;
     }
+
   public Historial(
-    String titulo, 
-    UUID idImpresora, 
-    String tiempoGrabado, 
-    String tiempoObra, 
-    UUID idMaterial, 
-    int cantidad, 
-    int ganancia, 
-    int precioFinal, 
+    String titulo,
+    UUID idImpresora,
+    String tiempoGrabado,
+    String tiempoObra,
+    UUID idMaterial,
+    int cantidad,
+    int ganancia,
+    int precioFinal,
     String fechaGuardado) {
       this.setTitulo(titulo);
       this.setIdImpresora(idImpresora);
@@ -56,6 +79,8 @@ public class Historial {
       this.setPrecioFinal(precioFinal);
       this.setFechaGuardado(fechaGuardado);
     }
+
+  public Historial() {}
 
 
 
@@ -120,4 +145,39 @@ public class Historial {
     public void setFechaGuardado(String fechaGuardado) {
         this.fechaGuardado = fechaGuardado;
     }
+
+    public String getImpresoraMarca() { return impresoraMarca; }
+    public void setImpresoraMarca(String impresoraMarca) { this.impresoraMarca = impresoraMarca; }
+    public String getImpresoraModelo() { return impresoraModelo; }
+    public void setImpresoraModelo(String impresoraModelo) { this.impresoraModelo = impresoraModelo; }
+    public String getImpresoraTipo() { return impresoraTipo; }
+    public void setImpresoraTipo(String impresoraTipo) { this.impresoraTipo = impresoraTipo; }
+    public String getImpresoraTitulo() { return impresoraTitulo; }
+    public void setImpresoraTitulo(String impresoraTitulo) { this.impresoraTitulo = impresoraTitulo; }
+    public Integer getImpresoraVidaUtil() { return impresoraVidaUtil; }
+    public void setImpresoraVidaUtil(Integer impresoraVidaUtil) { this.impresoraVidaUtil = impresoraVidaUtil; }
+    public Integer getImpresoraWatts() { return impresoraWatts; }
+    public void setImpresoraWatts(Integer impresoraWatts) { this.impresoraWatts = impresoraWatts; }
+    public Double getImpresoraPrecioCompra() { return impresoraPrecioCompra; }
+    public void setImpresoraPrecioCompra(Double impresoraPrecioCompra) { this.impresoraPrecioCompra = impresoraPrecioCompra; }
+    public Double getImpresoraPrecioRepuesto() { return impresoraPrecioRepuesto; }
+    public void setImpresoraPrecioRepuesto(Double impresoraPrecioRepuesto) { this.impresoraPrecioRepuesto = impresoraPrecioRepuesto; }
+    public Double getImpresoraAmortizacion() { return impresoraAmortizacion; }
+    public void setImpresoraAmortizacion(Double impresoraAmortizacion) { this.impresoraAmortizacion = impresoraAmortizacion; }
+
+    public String getMaterialNombre() { return materialNombre; }
+    public void setMaterialNombre(String materialNombre) { this.materialNombre = materialNombre; }
+    public Double getMaterialPrecioCompra() { return materialPrecioCompra; }
+    public void setMaterialPrecioCompra(Double materialPrecioCompra) { this.materialPrecioCompra = materialPrecioCompra; }
+    public Integer getMaterialMerma() { return materialMerma; }
+    public void setMaterialMerma(Integer materialMerma) { this.materialMerma = materialMerma; }
+    public Double getMaterialPrecioCosto() { return materialPrecioCosto; }
+    public void setMaterialPrecioCosto(Double materialPrecioCosto) { this.materialPrecioCosto = materialPrecioCosto; }
+    public String getMaterialDimensiones() { return materialDimensiones; }
+    public void setMaterialDimensiones(String materialDimensiones) { this.materialDimensiones = materialDimensiones; }
+
+    public String getIdImpresoraRef() { return idImpresoraRef; }
+    public void setIdImpresoraRef(String idImpresoraRef) { this.idImpresoraRef = idImpresoraRef; }
+    public String getIdMaterialRef() { return idMaterialRef; }
+    public void setIdMaterialRef(String idMaterialRef) { this.idMaterialRef = idMaterialRef; }
 }

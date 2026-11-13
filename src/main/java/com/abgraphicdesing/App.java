@@ -2,14 +2,20 @@ package com.abgraphicdesing;
 
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.CalculosController;
+import com.abgraphicdesing.controller.HistorialController;
 import com.abgraphicdesing.controller.ImpresorasController;
+import com.abgraphicdesing.controller.TiposController;
 import com.abgraphicdesing.database.DbConfig;
-import com.abgraphicdesing.database.InitializerDatabase;
+import com.abgraphicdesing.database.MigrationManager;
 import com.abgraphicdesing.repository.AjustesRepository;
+import com.abgraphicdesing.repository.HistorialRepository;
 import com.abgraphicdesing.repository.ImpresorasRepository;
+import com.abgraphicdesing.repository.TiposRepository;
 import com.abgraphicdesing.service.AjustesService;
 import com.abgraphicdesing.service.CalculosService;
+import com.abgraphicdesing.service.HistorialService;
 import com.abgraphicdesing.service.ImpresorasService;
+import com.abgraphicdesing.service.TiposService;
 import com.abgraphicdesing.view.MainView;
 
 import com.abgraphicdesing.controller.MaterialesController;
@@ -27,13 +33,13 @@ import javafx.stage.Stage;
 public class App extends Application{
   public static void main( String[] args ){
     DbConfig dbConfig = new DbConfig();
-    InitializerDatabase initializer = new InitializerDatabase(dbConfig);
+    MigrationManager migrationManager = new MigrationManager(dbConfig);
 
     // SeederScript seederExe = new SeederScript(dbConfig);
     // seederExe.update();
 
     try{
-      initializer.initializer();
+      migrationManager.migrate();
     } catch(Exception e){
       e.printStackTrace();
     }
@@ -61,6 +67,10 @@ public class App extends Application{
     ImpresorasService impService = new ImpresorasService(impRepository);
     ImpresorasController impController = new ImpresorasController(impService);
 
+    TiposRepository tiposRepository = new TiposRepository(configDb);
+    TiposService tiposService = new TiposService(tiposRepository);
+    TiposController tiposController = new TiposController(tiposService);
+
     MaterialesRepository matRepository = new MaterialesRepository(configDb);
     MaterialesService matService = new MaterialesService(matRepository);
     MaterialesController matController = new MaterialesController(matService);
@@ -76,8 +86,12 @@ public class App extends Application{
     CalculosService calService = new CalculosService(ajuRepository, matRepository, impRepository);
     CalculosController calController = new CalculosController(calService);
 
+    HistorialRepository histRepository = new HistorialRepository(configDb);
+    HistorialService histService = new HistorialService(histRepository);
+    HistorialController histController = new HistorialController(histService);
 
-    MainView mainView = new MainView(impController, matController, ajuController, perController, calController);
+
+    MainView mainView = new MainView(impController, matController, ajuController, perController, calController, tiposController, histController);
     Scene scene = new Scene(mainView, 1200, 800);
 
 
