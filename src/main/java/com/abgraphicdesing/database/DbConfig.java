@@ -9,13 +9,26 @@ import com.zaxxer.hikari.HikariDataSource;
 
 public class DbConfig {
   private static final HikariDataSource dataSource;
-  private static final String url = "jdbc:sqlite:data/app.db";
 
   static {
-    File directory = new File("data");
-    if (!directory.exists()) {
-        directory.mkdirs(); 
+    // 1. Obtener la carpeta personal del usuario (ej: C:\Users\TuUsuario)
+    String userHome = System.getProperty("user.home");
+
+    // 2. Apuntar a la carpeta "Documentos" y dentro crear la carpeta con el nombre del proyecto
+    File documentsDir = new File(userHome, "Documents");
+    File appDir = new File(documentsDir, "abgraphicdesing");
+
+    // Si no existe la carpeta Documentos o la del proyecto, las creamos
+    if (!appDir.exists()) {
+        appDir.mkdirs();
     }
+
+    // 3. Definir la ruta del archivo de la base de datos
+    File dbFile = new File(appDir, "app.db");
+    String url = "jdbc:sqlite:" + dbFile.getAbsolutePath();
+
+    // Mensaje útil para saber exactamente dónde se está guardando
+    System.out.println("Base de datos ubicada en: " + dbFile.getAbsolutePath());
 
     HikariConfig config = new HikariConfig();
     config.setJdbcUrl(url);

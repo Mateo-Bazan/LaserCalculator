@@ -52,3 +52,14 @@ create table if not exists historial(
     precio_final integer,
     fecha_guardado text
 );
+
+insert or ignore into periodo (periodo) values
+    ('Hora'),
+    ('Diario'),
+    ('Semanal'),
+    ('Mensual'),
+    ('Anual');
+
+insert or ignore into ajustes (nombre, gasto, id_periodo) values
+    ('Mano de obra', 10000, 1),
+    ('kWh', 10000, 3);
