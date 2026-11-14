@@ -36,4 +36,28 @@ public class TiposController {
       onError
     );
   }
+
+  public void contarUso(
+    int idTipo,
+    Consumer<Integer> onSuccess,
+    Consumer<Throwable> onError
+  ) {
+    AsyncExecutor.execute(
+      () -> service.contarUso(idTipo),
+      onSuccess,
+      onError
+    );
+  }
+
+  public void delete(
+    int id,
+    Consumer<String> onSuccess,
+    Consumer<Throwable> onError
+  ) {
+    AsyncExecutor.execute(
+      () -> service.delete(id),
+      onSuccess,
+      onError
+    );
+  }
 } 

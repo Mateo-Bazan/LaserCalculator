@@ -224,6 +224,10 @@ public class AjustesView extends VBox {
 
       Label pill = new Label(formatoPeriodo(ajuste.periodo()));
       pill.getStyleClass().add("unit-pill");
+      pill.setMinWidth(90);
+      pill.setPrefWidth(90);
+      pill.setMaxWidth(90);
+      pill.setAlignment(Pos.CENTER);
 
       Button del = new Button("🗑");
       del.getStyleClass().add("btn-icon-delete");
