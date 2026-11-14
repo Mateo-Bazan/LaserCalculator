@@ -42,9 +42,12 @@ public class HistorialView extends VBox {
     cargar();
   }
 
+  public void recargar() {
+    cargar();
+  }
+
   private void cargar() {
-    status.setText("Cargando...");
-    controller.getAll(
+    status.setText("Cargando...");    controller.getAll(
       items -> Platform.runLater(() -> {
         lista.getChildren().clear();
         if (items == null || items.isEmpty()) {
@@ -86,7 +89,8 @@ public class HistorialView extends VBox {
     Label imp = new Label("Impresora: " + nombreImp);
     Label mat = new Label("Material: " + material);
     Label tiempos = new Label("Tiempos: Grabado " + (h.getTiempoGrabado() != null ? h.getTiempoGrabado() : "-") + " / Mano obra " + (h.getTiempoObra() != null ? h.getTiempoObra() : "-"));
-    Label datos = new Label("Cantidad: " + h.getCantidad() + " | Ganancia: " + h.getGanancia() + "% | Precio final: $" + h.getPrecioFinal());
+    String costo = h.getPrecioCosto() != null ? "$" + h.getPrecioCosto() : "-";
+    Label datos = new Label("Cantidad: " + h.getCantidad() + " | Costo: " + costo + " | Ganancia: " + h.getGanancia() + "% | Precio final: $" + h.getPrecioFinal());
 
     HBox header = new HBox(titulo);
     header.setAlignment(Pos.CENTER_LEFT);

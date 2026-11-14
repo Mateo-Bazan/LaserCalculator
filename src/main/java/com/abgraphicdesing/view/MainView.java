@@ -117,6 +117,8 @@ public class MainView extends BorderPane {
         view = buildHistorialPlaceholder();
       }
       viewCache.put(key, view);
+    } else if (view instanceof com.abgraphicdesing.view.HistorialView hv) {
+      hv.recargar();
     }
     show(key, view);
   }

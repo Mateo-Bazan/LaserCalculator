@@ -12,6 +12,7 @@ import com.abgraphicdesing.controller.HistorialController;
 import com.abgraphicdesing.controller.ImpresorasController;
 import com.abgraphicdesing.controller.MaterialesController;
 import com.abgraphicdesing.model.dto.CalculosReqDto;
+import com.abgraphicdesing.model.dto.CalculosResDto;
 import com.abgraphicdesing.model.dto.ImpresorasResDto;
 import com.abgraphicdesing.model.dto.MaterialesResDto;
 import com.abgraphicdesing.model.entity.Historial;
@@ -65,6 +66,19 @@ public class CalcualdoraView extends HBox {
   private final Label precioFinalValor = new Label();
   private final VBox resultBox = new VBox(8);
   private final Button btnCalcular = new Button("Calcular Presupuesto →");
+  private final Button btnConfirmar = new Button("Confirmar presupuesto");
+  private final Label confirmacionLabel = new Label();
+
+  // Datos del último presupuesto calculado (se usan al confirmar)
+  private CalculosResDto ultimoCalculo;
+  private ImpresorasResDto ultimaImpresora;
+  private MaterialesResDto ultimoMaterial;
+  private String ultimoTitulo;
+  private String ultimoTiempoGrabado;
+  private String ultimoTiempoObra;
+  private boolean guardandoPresupuesto;
+  private boolean presupuestoConfirmado;
+  private int versionCalculo;
 
   private final NumberFormat formatoMoneda =
     NumberFormat.getIntegerInstance(Locale.forLanguageTag("es-AR"));
@@ -196,11 +210,19 @@ public class CalcualdoraView extends HBox {
     btnCalcular.getStyleClass().add("btn-primary");
     btnCalcular.setOnAction(e -> calcular());
 
+    btnConfirmar.getStyleClass().add("btn-secondary");
+    btnConfirmar.setDisable(true);
+    btnConfirmar.setOnAction(e -> confirmarPresupuesto());
+
+    confirmacionLabel.getStyleClass().add("form-hint");
+    confirmacionLabel.setWrapText(true);
+    confirmacionLabel.setMaxWidth(260);
+
     Region espacio = new Region();
     HBox.setHgrow(espacio, Priority.ALWAYS);
 
-    VBox botones = new VBox(btnCalcular);
-    botones.setAlignment(Pos.CENTER);
+    VBox botones = new VBox(8, btnCalcular, btnConfirmar, confirmacionLabel);
+    botones.setAlignment(Pos.CENTER_RIGHT);
 
     HBox zona = new HBox(resultBox, espacio, botones);
     zona.setAlignment(Pos.CENTER_LEFT);
@@ -235,6 +257,19 @@ public class CalcualdoraView extends HBox {
     HBox.setHgrow(espacio, Priority.ALWAYS);
     return new HBox(etiqueta, espacio, valor);
   }
+  private HBox filaDetalle(String texto, Label valor) {
+    Label etiqueta = new Label(texto);
+    etiqueta.getStyleClass().add("result-detail");
+    valor.getStyleClass().add("result-detail");
+    Region espacio = new Region();
+    HBox.setHgrow(espacio, Priority.ALWAYS);
+    return new HBox(etiqueta, espacio, valor);
+  }
+
+  private String moneda(int valor) {
+    return "$" + formatoMoneda.format(valor);
+  }
+
   private HBox filaDetalle(String texto, Label valor) {
     Label etiqueta = new Label(texto);
     etiqueta.getStyleClass().add("result-detail");
@@ -340,6 +375,7 @@ public class CalcualdoraView extends HBox {
       calculosController.create(
         dto,
         res -> {
+          // Desglose de costos (cambios recientes)
           manoObraValor.setText(moneda(res.costoManoObra()));
           materialesValor.setText(moneda(res.costoMateriales()));
           maquinaValor.setText(moneda(res.costoMaquina()));
@@ -354,7 +390,22 @@ public class CalcualdoraView extends HBox {
           resultBox.setVisible(true);
           resultBox.setManaged(true);
           btnCalcular.setDisable(false);
-          guardarEnHistorial(imp, mat);
+
+          // Datos para la confirmación explícita del presupuesto
+          ultimoCalculo = res;
+          ultimaImpresora = imp;
+          ultimoMaterial = mat;
+          ultimoTitulo = nombreTrabajo.getText() == null || nombreTrabajo.getText().trim().isEmpty()
+            ? (imp.titulo() == null ? "Cálculo" : imp.titulo())
+            : nombreTrabajo.getText().trim();
+          ultimoTiempoGrabado = tiempoGrabado.getText();
+          ultimoTiempoObra = horasManoObra.getText();
+          versionCalculo++;
+          presupuestoConfirmado = false;
+          guardandoPresupuesto = false;
+          btnConfirmar.setText("Confirmar presupuesto");
+          btnConfirmar.setDisable(false);
+          confirmacionLabel.setText("");
         },
         error -> {
           errorLabel.setText("No se pudo calcular: " + error.getMessage());
@@ -368,56 +419,86 @@ public class CalcualdoraView extends HBox {
     }
   }
 
-  private void guardarEnHistorial(ImpresorasResDto imp, MaterialesResDto mat) {
-    if (historialController == null) return;
-    try {
-      Historial h = new Historial();
-      h.setTitulo(nombreTrabajo.getText() == null || nombreTrabajo.getText().trim().isEmpty()
-        ? (imp == null ? "Cálculo" : imp.titulo())
-        : nombreTrabajo.getText().trim());
-      h.setTiempoGrabado(tiempoGrabado.getText());
-      h.setTiempoObra(horasManoObra.getText());
-      h.setIdImpresora(imp == null ? null : imp.id());
-      h.setIdMaterial(mat == null || esNinguno(mat) ? null : mat.id());
-      h.setIdImpresoraRef(imp == null ? null : (imp.id() == null ? null : imp.id().toString()));
-      h.setIdMaterialRef(mat == null || esNinguno(mat) ? null : (mat.id() == null ? null : mat.id().toString()));
-      try {
-        h.setCantidad(Integer.parseInt(cantidad.getText().trim()));
-      } catch (Exception ex) { h.setCantidad(0); }
-      try {
-        h.setGanancia(Integer.parseInt(ganancia.getText().replace("%", "").trim()));
-      } catch (Exception ex) { h.setGanancia(0); }
-      h.setPrecioFinal(0);
-      try {
-        String pf = precioFinalValor.getText().replace("$", "").replace(".", "").replace(",", "").trim();
-        if (!pf.isEmpty()) h.setPrecioFinal(Integer.parseInt(pf));
-      } catch (Exception ignored) {}
-      h.setFechaGuardado(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
-
-      if (imp != null) {
-        h.setImpresoraMarca(imp.marca());
-        h.setImpresoraModelo(imp.modelo());
-        h.setImpresoraTipo(imp.tipo());
-        h.setImpresoraTitulo(imp.titulo());
-        h.setImpresoraVidaUtil(imp.vidaUtil());
-        h.setImpresoraWatts(imp.watts());
-        h.setImpresoraPrecioCompra((double) imp.precioCompra());
-        h.setImpresoraPrecioRepuesto((double) imp.precioRespuesto());
-        h.setImpresoraAmortizacion((double) imp.amortizacion());
-      }
-
-      if (mat != null && !esNinguno(mat)) {
-        h.setMaterialNombre(mat.nombre());
-        h.setMaterialPrecioCompra((double) mat.precioCompra());
-        h.setMaterialMerma(mat.merma());
-        h.setMaterialPrecioCosto((double) mat.precioCosto());
-        h.setMaterialDimensiones(mat.dimensiones());
-      }
-
-      historialController.save(h, ok -> {}, err -> AppLogger.warn("No se pudo guardar historial"));
-    } catch (Exception e) {
-      AppLogger.warn("Error al preparar historial: " + e.getMessage());
+  private void confirmarPresupuesto() {
+    if (ultimoCalculo == null) {
+      confirmacionLabel.setText("Primero calculá un presupuesto.");
+      return;
     }
+    if (guardandoPresupuesto || presupuestoConfirmado) {
+      return;
+    }
+    if (historialController == null) {
+      confirmacionLabel.setText("El historial no está disponible.");
+      return;
+    }
+
+    guardandoPresupuesto = true;
+    btnConfirmar.setDisable(true);
+    confirmacionLabel.setText("Guardando presupuesto...");
+    final int version = versionCalculo;
+
+    historialController.save(
+      construirHistorial(),
+      ok -> {
+        if (version != versionCalculo) return;
+        guardandoPresupuesto = false;
+        if (Boolean.TRUE.equals(ok)) {
+          presupuestoConfirmado = true;
+          btnConfirmar.setText("Presupuesto confirmado ✓");
+          confirmacionLabel.setText("Presupuesto guardado en el historial.");
+        } else {
+          btnConfirmar.setDisable(false);
+          confirmacionLabel.setText("No se pudo guardar el presupuesto. Intentá nuevamente.");
+        }
+      },
+      err -> {
+        if (version != versionCalculo) return;
+        guardandoPresupuesto = false;
+        btnConfirmar.setDisable(false);
+        confirmacionLabel.setText("Error al guardar el presupuesto: "
+          + (err == null || err.getMessage() == null ? "error desconocido" : err.getMessage()));
+        AppLogger.warn("Error al confirmar presupuesto: " + (err == null ? "" : err.getMessage()));
+      }
+    );
+  }
+
+  private Historial construirHistorial() {
+    Historial h = new Historial();
+    h.setTitulo(ultimoTitulo);
+    h.setTiempoGrabado(ultimoTiempoGrabado);
+    h.setTiempoObra(ultimoTiempoObra);
+    h.setIdImpresora(ultimaImpresora == null ? null : ultimaImpresora.id());
+    h.setIdMaterial(ultimoMaterial == null || esNinguno(ultimoMaterial) ? null : ultimoMaterial.id());
+    h.setIdImpresoraRef(ultimaImpresora == null || ultimaImpresora.id() == null
+      ? null : ultimaImpresora.id().toString());
+    h.setIdMaterialRef(ultimoMaterial == null || esNinguno(ultimoMaterial) || ultimoMaterial.id() == null
+      ? null : ultimoMaterial.id().toString());
+    h.setCantidad(ultimoCalculo.cantidad());
+    h.setGanancia(ultimoCalculo.porcentajeGanancia());
+    h.setPrecioCosto(ultimoCalculo.costo());
+    h.setPrecioFinal(ultimoCalculo.precioFinal());
+    h.setFechaGuardado(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+    if (ultimaImpresora != null) {
+      h.setImpresoraMarca(ultimaImpresora.marca());
+      h.setImpresoraModelo(ultimaImpresora.modelo());
+      h.setImpresoraTipo(ultimaImpresora.tipo());
+      h.setImpresoraTitulo(ultimaImpresora.titulo());
+      h.setImpresoraVidaUtil(ultimaImpresora.vidaUtil());
+      h.setImpresoraWatts(ultimaImpresora.watts());
+      h.setImpresoraPrecioCompra((double) ultimaImpresora.precioCompra());
+      h.setImpresoraPrecioRepuesto((double) ultimaImpresora.precioRespuesto());
+      h.setImpresoraAmortizacion((double) ultimaImpresora.amortizacion());
+    }
+
+    if (ultimoMaterial != null && !esNinguno(ultimoMaterial)) {
+      h.setMaterialNombre(ultimoMaterial.nombre());
+      h.setMaterialPrecioCompra((double) ultimoMaterial.precioCompra());
+      h.setMaterialMerma(ultimoMaterial.merma());
+      h.setMaterialPrecioCosto((double) ultimoMaterial.precioCosto());
+      h.setMaterialDimensiones(ultimoMaterial.dimensiones());
+    }
+    return h;
   }
 
 }

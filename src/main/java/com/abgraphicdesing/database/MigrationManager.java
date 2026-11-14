@@ -31,8 +31,16 @@ public class MigrationManager {
         ensureV1AppliedIfSchemaExists(conn);
         List<MigrationFile> pending = getPendingMigrations(conn);
         for (MigrationFile migration : pending) {
+          if (isAlreadySatisfied(conn, migration)) {
+            // La columna ya fue agregada por una ejecución anterior o por
+            // ensureHistorialColumns; se registra la migración sin re-ejecutarla.
+            markMigrationAsApplied(conn, migration.version, migration.fileName);
+            System.out.println("Migración ya satisfecha: " + migration.version + " - " + migration.fileName);
+            continue;
+          }
           applyMigration(conn, migration);
         }
+        ensureHistorialColumns(conn);
         conn.commit();
       } catch (Exception e) {
         conn.rollback();
@@ -108,6 +116,28 @@ public class MigrationManager {
     return pending;
   }
 
+  private boolean isAlreadySatisfied(Connection conn, MigrationFile migration) throws SQLException {
+    // La migración de precio de costo solo agrega la columna precio_costo.
+    // Si ya existe (por ejemplo, en bases creadas antes de registrar la migración),
+    // no debe volver a ejecutarse porque SQLite no admite IF NOT EXISTS en ADD COLUMN.
+    if (!migration.fileName.contains("historial_precio_costo")) {
+      return false;
+    }
+    return historialHasColumn(conn, "precio_costo");
+  }
+
+  private boolean historialHasColumn(Connection conn, String columnName) throws SQLException {
+    String sql = "PRAGMA table_info(historial)";
+    try (Statement stmt = conn.createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
+      while (rs.next()) {
+        if (columnName.equalsIgnoreCase(rs.getString("name"))) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   private List<MigrationFile> loadMigrationFiles() throws Exception {
     List<String> resourceNames = findMigrationResources();
     List<MigrationFile> migrations = new ArrayList<>();
@@ -141,7 +171,7 @@ public class MigrationManager {
     String[] candidates = {
       "db/migrations/V1__init_database.sql",
       "db/migrations/V2__historial_snapshot.sql",
-      "db/migrations/V3__tipos_create.sql",
+      "db/migrations/V3__historial_precio_costo.sql",
       "db/V1__init_database.sql"
     };
     for (String candidate : candidates) {
@@ -187,8 +217,9 @@ public class MigrationManager {
         if (trimmed.isEmpty()) {
           continue;
         }
-        // Skip comments
-        if (trimmed.startsWith("--") || trimmed.startsWith("/*")) {
+        // Quitar comentarios iniciales para no omitir la sentencia que sigue
+        trimmed = stripLeadingComments(trimmed);
+        if (trimmed.isEmpty()) {
           continue;
         }
         stmt.execute(trimmed);
@@ -196,6 +227,70 @@ public class MigrationManager {
     }
     markMigrationAsApplied(conn, migration.version, migration.fileName);
     System.out.println("Migración aplicada: " + migration.version + " - " + migration.fileName);
+  }
+
+  private void ensureHistorialColumns(Connection conn) throws SQLException {
+    // Compatibilidad: bases creadas con versiones parciales de la migración V2
+    // pueden no tener todas las columnas snapshot. Se agregan solo las faltantes.
+    String[][] columns = {
+      {"impresora_marca", "TEXT"},
+      {"impresora_modelo", "TEXT"},
+      {"impresora_tipo", "TEXT"},
+      {"impresora_titulo", "TEXT"},
+      {"impresora_vida_util", "INTEGER"},
+      {"impresora_watts", "INTEGER"},
+      {"impresora_precio_compra", "REAL"},
+      {"impresora_precio_repuesto", "REAL"},
+      {"impresora_amortizacion", "REAL"},
+      {"material_nombre", "TEXT"},
+      {"material_precio_compra", "REAL"},
+      {"material_merma", "INTEGER"},
+      {"material_precio_costo", "REAL"},
+      {"material_dimensiones", "TEXT"},
+      {"id_impresora_ref", "TEXT"},
+      {"id_material_ref", "TEXT"},
+      {"precio_costo", "INTEGER"}
+    };
+
+    java.util.Set<String> existing = new java.util.HashSet<>();
+    try (Statement stmt = conn.createStatement();
+         ResultSet rs = stmt.executeQuery("PRAGMA table_info(historial)")) {
+      while (rs.next()) {
+        existing.add(rs.getString("name"));
+      }
+    }
+    if (existing.isEmpty()) {
+      return;
+    }
+    try (Statement stmt = conn.createStatement()) {
+      for (String[] column : columns) {
+        if (!existing.contains(column[0])) {
+          stmt.execute("ALTER TABLE historial ADD COLUMN " + column[0] + " " + column[1]);
+        }
+      }
+    }
+  }
+
+  private String stripLeadingComments(String sql) {
+    String s = sql;
+    while (true) {
+      s = s.trim();
+      if (s.startsWith("--")) {
+        int nl = s.indexOf('\n');
+        if (nl < 0) {
+          return "";
+        }
+        s = s.substring(nl + 1);
+      } else if (s.startsWith("/*")) {
+        int end = s.indexOf("*/");
+        if (end < 0) {
+          return "";
+        }
+        s = s.substring(end + 2);
+      } else {
+        return s;
+      }
+    }
   }
 
   private static class MigrationFile {
