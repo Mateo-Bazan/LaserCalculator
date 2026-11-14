@@ -29,4 +29,20 @@ public class TiposService {
     com.abgraphicdesing.model.entity.Tipos tipo = repository.save(nombre.trim());
     return new TiposResDto(tipo);
   }
+
+  public int contarUso(int idTipo) {
+    return repository.contarImpresorasConTipo(idTipo);
+  }
+
+  public String delete(int id) {
+    int enUso = repository.contarImpresorasConTipo(id);
+    if (enUso > 0) {
+      throw new IllegalStateException(
+        "No se puede eliminar: lo usan " + enUso + " impresora(s).");
+    }
+    if (!repository.delete(id)) {
+      throw new IllegalArgumentException("El tipo no existe.");
+    }
+    return "El tipo fue eliminado con exito";
+  }
 } 

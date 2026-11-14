@@ -90,7 +90,7 @@ public class TiposRepository {
     }
     String sql = "INSERT INTO tipo (tipo) VALUES (?)";
     try (Connection conn = dbConfig.getConnection();
-         PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+        PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
       ps.setString(1, nombreTrim);
       ps.executeUpdate();
       try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -104,5 +104,30 @@ public class TiposRepository {
       throw new RuntimeException("Error al crear Tipo: " + err.getMessage());
     }
   }
-} 
- 
+
+  public int contarImpresorasConTipo(int idTipo) {
+    String sql = "SELECT COUNT(*) FROM impresoras WHERE id_tipo = ?";
+    try (Connection conn = dbConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, idTipo);
+      try (ResultSet rs = ps.executeQuery()) {
+        return rs.next() ? rs.getInt(1) : 0;
+      }
+    } catch (SQLException err) {
+      System.err.println("Error al contar uso del Tipo: " + err.getMessage());
+      throw new RuntimeException("Error al contar uso del Tipo: " + err.getMessage());
+    }
+  }
+
+  public boolean delete(int id) {
+    String sql = "DELETE FROM tipo WHERE id = ?";
+    try (Connection conn = dbConfig.getConnection();
+        PreparedStatement ps = conn.prepareStatement(sql)) {
+      ps.setInt(1, id);
+      return ps.executeUpdate() > 0;
+    } catch (SQLException err) {
+      System.err.println("Error al eliminar Tipo: " + err.getMessage());
+      throw new RuntimeException("Error al eliminar Tipo: " + err.getMessage());
+    }
+  }
+}

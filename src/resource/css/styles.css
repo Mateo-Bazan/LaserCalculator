@@ -23,6 +23,10 @@
   -fx-font-weight: bold;
   -fx-text-fill: #111827;
 }
+.result-detail {
+  -fx-font-size: 13px;
+  -fx-text-fill: #374151;
+}
 
 /* ===== Barra de navegacion ===== */
 .navigation-bar {

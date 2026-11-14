@@ -54,6 +54,12 @@ public class CalcualdoraView extends HBox {
 
   // Mensajes y resultado
   private final Label errorLabel = new Label();
+  private final Label manoObraValor = new Label();
+  private final Label materialesValor = new Label();
+  private final Label maquinaValor = new Label();
+  private final Label gastosFijosValor = new Label();
+  private final Label costoUnitarioValor = new Label();
+  private final Label precioUnitarioValor = new Label();
   private final Label costoValor = new Label();
   private final Label gananciaValor = new Label();
   private final Label precioFinalValor = new Label();
@@ -169,12 +175,20 @@ public class CalcualdoraView extends HBox {
 
   private HBox construirZonaResultado() {
     resultBox.getStyleClass().add("result-box");
-    resultBox.setPrefWidth(330);
-    resultBox.setMaxWidth(330);
+    resultBox.setPrefWidth(400);
+    resultBox.setMaxWidth(400);
     resultBox.getChildren().addAll(
-      filaResultado("Precio de costo", costoValor),
-      filaResultado("Porcentaje de ganancia", gananciaValor),
-      filaResultado("PRECIO FINAL", precioFinalValor)
+      filaDetalle("Mano de obra", manoObraValor),
+      filaDetalle("Materiales", materialesValor),
+      filaDetalle("Costo de máquina", maquinaValor),
+      filaDetalle("Gastos fijos", gastosFijosValor),
+      separador(),
+      filaResultado("Costo total", costoValor),
+      filaDetalle("Ganancia (+ mano de obra)", gananciaValor),
+      filaResultado("PRECIO FINAL", precioFinalValor),
+      separador(),
+      filaDetalle("Costo por unidad", costoUnitarioValor),
+      filaDetalle("Precio por unidad", precioUnitarioValor)
     );
     resultBox.setVisible(false);
     resultBox.setManaged(false);
@@ -220,6 +234,18 @@ public class CalcualdoraView extends HBox {
     Region espacio = new Region();
     HBox.setHgrow(espacio, Priority.ALWAYS);
     return new HBox(etiqueta, espacio, valor);
+  }
+  private HBox filaDetalle(String texto, Label valor) {
+    Label etiqueta = new Label(texto);
+    etiqueta.getStyleClass().add("result-detail");
+    valor.getStyleClass().add("result-detail");
+    Region espacio = new Region();
+    HBox.setHgrow(espacio, Priority.ALWAYS);
+    return new HBox(etiqueta, espacio, valor);
+  }
+
+  private String moneda(int valor) {
+    return "$" + formatoMoneda.format(valor);
   }
 
   private Region separador() {
@@ -314,9 +340,17 @@ public class CalcualdoraView extends HBox {
       calculosController.create(
         dto,
         res -> {
-          costoValor.setText("$" + formatoMoneda.format(res.costo()));
-          gananciaValor.setText(res.porcentajeGanancia() + "%");
-          precioFinalValor.setText("$" + formatoMoneda.format(res.precioFinal()));
+          manoObraValor.setText(moneda(res.costoManoObra()));
+          materialesValor.setText(moneda(res.costoMateriales()));
+          maquinaValor.setText(moneda(res.costoMaquina()));
+          gastosFijosValor.setText(moneda(res.gastosFijos()));
+          costoValor.setText(moneda(res.costo()));
+          gananciaValor.setText(moneda(res.montoGanancia())
+            + " (" + res.porcentajeGanancia() + "%) + " + moneda(res.costoManoObra()));
+          precioFinalValor.setText(moneda(res.precioFinal()));
+          costoUnitarioValor.setText(moneda(res.costoUnitario()));
+          precioUnitarioValor.setText(moneda(res.precioUnitario()));
+
           resultBox.setVisible(true);
           resultBox.setManaged(true);
           btnCalcular.setDisable(false);
