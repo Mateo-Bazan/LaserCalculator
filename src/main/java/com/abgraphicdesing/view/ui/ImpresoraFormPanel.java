@@ -12,6 +12,7 @@ import com.abgraphicdesing.model.dto.ImpresorasResDto;
 import com.abgraphicdesing.model.dto.TiposResDto;
 
 import javafx.application.Platform;
+import javafx.scene.control.Tooltip;
 
 import javafx.geometry.HPos;
 import javafx.geometry.Pos;
@@ -105,7 +106,13 @@ public class ImpresoraFormPanel extends VBox {
     Button btnNuevoTipo = new Button("+");
     btnNuevoTipo.getStyleClass().add("btn-add");
     btnNuevoTipo.setOnAction(e -> abrirDialogoNuevoTipo());
-    HBox tipoBox = new HBox(8, cbTipo, btnNuevoTipo);
+
+    Button btnEliminarTipo = new Button("🗑");
+    btnEliminarTipo.getStyleClass().add("btn-icon-delete");
+    btnEliminarTipo.setTooltip(new Tooltip("Eliminar el tipo seleccionado"));
+    btnEliminarTipo.setOnAction(e -> pedirEliminarTipo());
+
+    HBox tipoBox = new HBox(8, cbTipo, btnNuevoTipo, btnEliminarTipo);
     tipoBox.setAlignment(Pos.CENTER_LEFT);
     HBox.setHgrow(cbTipo, Priority.ALWAYS);
 
@@ -337,5 +344,60 @@ public class ImpresoraFormPanel extends VBox {
 
   public void setOnCancelar(Runnable action) {
     this.onCancelar = action;
+  }
+
+  private void pedirEliminarTipo() {
+  if (tiposControllerRef == null) return;
+
+  String nombre = cbTipo.getValue();
+  if (nombre == null || nombre.isBlank()) {
+    avisar(Alert.AlertType.INFORMATION, "Elegí primero el tipo que querés eliminar.");
+    return;
+  }
+  Integer idTipo = tiposConocidos.get(nombre);
+  if (idTipo == null) return;
+
+  tiposControllerRef.contarUso(
+    idTipo,
+    cantidad -> Platform.runLater(() -> {
+      if (cantidad > 0) {
+        avisar(Alert.AlertType.WARNING,
+          "No se puede eliminar \"" + nombre + "\": lo usan "
+          + cantidad + " impresora(s).");
+        return;
+      }
+      Alert confirmar = new Alert(Alert.AlertType.CONFIRMATION,
+        "¿Eliminar el tipo \"" + nombre + "\"?",
+        ButtonType.OK, ButtonType.CANCEL);
+      confirmar.setHeaderText(null);
+      confirmar.showAndWait()
+        .filter(r -> r == ButtonType.OK)
+        .ifPresent(r -> eliminarTipo(idTipo, nombre));
+    }),
+    err -> Platform.runLater(() ->
+      avisar(Alert.AlertType.ERROR, "No se pudo verificar el tipo."))
+  );
+}
+
+  private void eliminarTipo(int idTipo, String nombre) {
+    tiposControllerRef.delete(
+      idTipo,
+      msg -> Platform.runLater(() -> {
+        tiposConocidos.remove(nombre);
+        cbTipo.setValue(null);
+        cbTipo.getItems().setAll(tiposConocidos.keySet());
+        cbTipo.setPromptText(tiposConocidos.isEmpty()
+          ? "No hay tipos en la base" : "Elegí un tipo");
+        ocultarError();
+      }),
+      err -> Platform.runLater(() ->
+        avisar(Alert.AlertType.ERROR, err.getMessage()))
+    );
+  }
+
+  private void avisar(Alert.AlertType tipo, String mensaje) {
+    Alert alert = new Alert(tipo, mensaje, ButtonType.OK);
+    alert.setHeaderText(null);
+    alert.showAndWait();
   }
 }

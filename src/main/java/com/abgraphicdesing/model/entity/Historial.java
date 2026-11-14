@@ -3,7 +3,7 @@ package com.abgraphicdesing.model.entity;
 import java.util.UUID;
 
 public class Historial {
-  private UUID id;
+  private Integer id;
   private String titulo;
   private UUID idImpresora;
   private String tiempoGrabado;
@@ -11,6 +11,7 @@ public class Historial {
   private UUID idMaterial;
   private int cantidad;
   private int ganancia;
+  private Integer precioCosto;
   private int precioFinal;
   private String fechaGuardado;
 
@@ -37,7 +38,7 @@ public class Historial {
   private String idMaterialRef;
 
   public Historial(
-    UUID id,
+    Integer id,
     String titulo,
     UUID idImpresora,
     String tiempoGrabado,
@@ -84,7 +85,7 @@ public class Historial {
 
 
 
-    public UUID getId() {
+    public Integer getId() {
         return id;
     }
     public String getTitulo() {
@@ -108,6 +109,9 @@ public class Historial {
     public Integer getGanancia() {
         return ganancia;
     }
+    public Integer getPrecioCosto() {
+        return precioCosto;
+    }
     public Integer getPrecioFinal() {
         return precioFinal;
     }
@@ -115,7 +119,7 @@ public class Historial {
         return fechaGuardado;
     }
 
-    public void setId(UUID id) {
+    public void setId(Integer id) {
         this.id = id;
     }
     public void setTitulo(String titulo) {
@@ -138,6 +142,9 @@ public class Historial {
     }
     public void setGanancia(Integer ganancia) {
         this.ganancia = ganancia;
+    }
+    public void setPrecioCosto(Integer precioCosto) {
+        this.precioCosto = precioCosto;
     }
     public void setPrecioFinal(Integer precioFinal) {
         this.precioFinal = precioFinal;

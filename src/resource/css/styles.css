@@ -23,6 +23,10 @@
   -fx-font-weight: bold;
   -fx-text-fill: #111827;
 }
+.result-detail {
+  -fx-font-size: 13px;
+  -fx-text-fill: #374151;
+}
 
 /* ===== Barra de navegacion ===== */
 .navigation-bar {
@@ -144,6 +148,29 @@
 
 .btn-primary:disabled {
   -fx-opacity: 0.5;
+}
+
+.btn-secondary {
+  -fx-background-color: #e2e8f0;
+  -fx-text-fill: #0f172a;
+  -fx-font-weight: bold;
+  -fx-font-size: 13px;
+  -fx-background-radius: 8;
+  -fx-padding: 9 22 9 22;
+  -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+  -fx-background-color: #cbd5e1;
+}
+
+.btn-secondary:disabled {
+  -fx-opacity: 0.5;
+}
+
+.form-hint {
+  -fx-font-size: 12px;
+  -fx-text-fill: #6b7280;
 }
 
 .btn-danger {

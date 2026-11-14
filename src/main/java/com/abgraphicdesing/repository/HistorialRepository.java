@@ -26,12 +26,12 @@ public class HistorialRepository {
         impresora_marca, impresora_modelo, impresora_tipo, impresora_titulo,
         impresora_vida_util, impresora_watts, impresora_precio_compra, impresora_precio_repuesto, impresora_amortizacion,
         material_nombre, material_precio_compra, material_merma, material_precio_costo, material_dimensiones,
-        id_impresora_ref, id_material_ref
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id_impresora_ref, id_material_ref, precio_costo
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """;
     try (Connection conn = dbConfig.getConnection();
          PreparedStatement ps = conn.prepareStatement(sql)) {
-      ps.setObject(1, h.getId() == null ? UUID.randomUUID().toString() : h.getId().toString());
+      ps.setObject(1, h.getId());
       ps.setString(2, h.getTitulo());
       ps.setString(3, h.getIdImpresora() == null ? null : h.getIdImpresora().toString());
       ps.setString(4, h.getTiempoGrabado());
@@ -60,6 +60,7 @@ public class HistorialRepository {
 
       ps.setString(25, h.getIdImpresoraRef());
       ps.setString(26, h.getIdMaterialRef());
+      if (h.getPrecioCosto() == null) ps.setObject(27, null); else ps.setInt(27, h.getPrecioCosto());
 
       return ps.executeUpdate() > 0;
     } catch (SQLException e) {
@@ -77,8 +78,8 @@ public class HistorialRepository {
          ResultSet rs = ps.executeQuery()) {
       while (rs.next()) {
         Historial h = new Historial();
-        String idStr = rs.getString("id");
-        if (idStr != null) h.setId(UUID.fromString(idStr));
+        Object idObj = rs.getObject("id");
+        if (idObj != null) h.setId(((Number) idObj).intValue());
         h.setTitulo(rs.getString("titulo"));
         String idImp = rs.getString("id_impresora");
         if (idImp != null) h.setIdImpresora(UUID.fromString(idImp));
@@ -88,6 +89,8 @@ public class HistorialRepository {
         if (idMat != null) h.setIdMaterial(UUID.fromString(idMat));
         h.setCantidad(rs.getInt("cantidad"));
         h.setGanancia(rs.getInt("ganancia"));
+        Object v = rs.getObject("precio_costo");
+        if (v != null) h.setPrecioCosto(((Number)v).intValue());
         h.setPrecioFinal(rs.getInt("precio_final"));
         h.setFechaGuardado(rs.getString("fecha_guardado"));
 
@@ -95,7 +98,7 @@ public class HistorialRepository {
         h.setImpresoraModelo(rs.getString("impresora_modelo"));
         h.setImpresoraTipo(rs.getString("impresora_tipo"));
         h.setImpresoraTitulo(rs.getString("impresora_titulo"));
-        Object v = rs.getObject("impresora_vida_util");
+        v = rs.getObject("impresora_vida_util");
         if (v != null) h.setImpresoraVidaUtil(((Number)v).intValue());
         v = rs.getObject("impresora_watts");
         if (v != null) h.setImpresoraWatts(((Number)v).intValue());
