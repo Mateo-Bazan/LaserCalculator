@@ -270,19 +270,6 @@ public class CalcualdoraView extends HBox {
     return "$" + formatoMoneda.format(valor);
   }
 
-  private HBox filaDetalle(String texto, Label valor) {
-    Label etiqueta = new Label(texto);
-    etiqueta.getStyleClass().add("result-detail");
-    valor.getStyleClass().add("result-detail");
-    Region espacio = new Region();
-    HBox.setHgrow(espacio, Priority.ALWAYS);
-    return new HBox(etiqueta, espacio, valor);
-  }
-
-  private String moneda(int valor) {
-    return "$" + formatoMoneda.format(valor);
-  }
-
   private Region separador() {
     Region sep = new Region();
     sep.getStyleClass().add("header-separator");
