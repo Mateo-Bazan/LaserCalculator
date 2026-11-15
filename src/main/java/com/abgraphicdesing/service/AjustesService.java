@@ -54,6 +54,12 @@ public class AjustesService{
       return "El ajuste no existe";
     }
 
+    Ajustes ajuste = ajusteOnDb.get();
+    if (ajuste.esProtegido()){
+      return "El ajuste \"" + ajuste.getNombre()
+        + "\" es obligatorio para los cálculos y no se puede eliminar.";
+    }
+
     this.repository.delete(id);
     return  "El ajuste fue eliminado con exito";
   }

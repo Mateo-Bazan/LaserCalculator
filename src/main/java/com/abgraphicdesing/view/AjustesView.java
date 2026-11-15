@@ -6,6 +6,7 @@ import java.util.List;
 import com.abgraphicdesing.controller.AjustesController;
 import com.abgraphicdesing.controller.PeriodosController;
 import com.abgraphicdesing.model.dto.AjustesResDto;
+import com.abgraphicdesing.model.entity.Ajustes;
 import com.abgraphicdesing.view.ui.AjustesFormDialog;
 import com.abgraphicdesing.view.util.Format;
 
@@ -20,6 +21,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Separator;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -229,9 +231,15 @@ public class AjustesView extends VBox {
       pill.setMaxWidth(90);
       pill.setAlignment(Pos.CENTER);
 
-      Button del = new Button("🗑");
+      boolean protegido = Ajustes.esNombreProtegido(ajuste.nombre());
+      Button del = new Button(protegido ? "🔒" : "🗑");
       del.getStyleClass().add("btn-icon-delete");
-      del.setOnAction(e -> onEliminar.accept(this));
+      del.setDisable(protegido);
+      if (protegido) {
+        del.setTooltip(new Tooltip("Ajuste obligatorio: no se puede eliminar"));
+      } else {
+        del.setOnAction(e -> onEliminar.accept(this));
+      }
 
       getChildren().addAll(nombre, spacer, txtGasto, pill, del);
     }

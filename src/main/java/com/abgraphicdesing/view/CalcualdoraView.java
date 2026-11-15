@@ -127,7 +127,7 @@ public class CalcualdoraView extends HBox {
     });
 
     cargarImpresoras(leftSide);
-    cargarMateriales();
+    refrescarMateriales();
   }
 
   private VBox construirLadoIzquierdo() {
@@ -323,7 +323,8 @@ public class CalcualdoraView extends HBox {
     );
   }
 
-  private void cargarMateriales() {
+  public void refrescarMateriales() {
+    MaterialesResDto seleccionado = materialCombo.getValue();
     materialesController.getAll(
       materiales -> {
         materialCombo.getItems().clear();
@@ -331,9 +332,22 @@ public class CalcualdoraView extends HBox {
         if (materiales != null) {
           materialCombo.getItems().addAll(materiales);
         }
+        restaurarMaterialSeleccionado(seleccionado);
       },
       error -> AppLogger.warn("Error cargando materiales: " + (error == null ? "" : error.getMessage()))
     );
+  }
+
+  private void restaurarMaterialSeleccionado(MaterialesResDto seleccionado) {
+    if (seleccionado == null) return;
+    if (esNinguno(seleccionado)) {
+      materialCombo.setValue(NINGUNO);
+      return;
+    }
+    materialCombo.getItems().stream()
+      .filter(m -> !esNinguno(m) && java.util.Objects.equals(m.id(), seleccionado.id()))
+      .findFirst()
+      .ifPresent(materialCombo::setValue);
   }
 
   private void calcular() {

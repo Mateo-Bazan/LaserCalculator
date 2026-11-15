@@ -172,6 +172,7 @@ public class MigrationManager {
       "db/migrations/V1__init_database.sql",
       "db/migrations/V2__historial_snapshot.sql",
       "db/migrations/V3__historial_precio_costo.sql",
+      "db/migrations/V4__ajustes_kwh_mensual.sql",
       "db/V1__init_database.sql"
     };
     for (String candidate : candidates) {

@@ -62,4 +62,4 @@ insert or ignore into periodo (periodo) values
 
 insert or ignore into ajustes (nombre, gasto, id_periodo) values
     ('Mano de obra', 10000, 1),
-    ('kWh', 10000, 3);
+    ('kWh', 10000, (SELECT id FROM periodo WHERE periodo = 'Mensual'));

@@ -72,5 +72,20 @@ public class Ajustes {
     if(dto.gasto() >= 0){ this.setGasto(dto.gasto());}
     if(dto.idPeriodo() > 0){ this.setIdPeriodo(dto.idPeriodo());}
   };
+
+  /**
+   * Ajustes base usados por el cálculo de presupuestos. No deben eliminarse
+   * porque el cálculo de costos depende de ellos.
+   */
+  public static boolean esNombreProtegido(String nombre){
+    if(nombre == null){ return false; }
+    String normalizado = nombre.trim();
+    return normalizado.equalsIgnoreCase("Mano de obra")
+      || normalizado.equalsIgnoreCase("kWh");
+  }
+
+  public boolean esProtegido(){
+    return esNombreProtegido(this.nombre);
+  }
   
 }

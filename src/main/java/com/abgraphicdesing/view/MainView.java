@@ -72,6 +72,7 @@ public class MainView extends BorderPane {
     } else if (view instanceof com.abgraphicdesing.view.CalcualdoraView cv) {
       try {
         cv.refrescarImpresoras();
+        cv.refrescarMateriales();
       } catch (Exception ignored) {}
     }
     show(key, view);
