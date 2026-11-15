@@ -28,6 +28,7 @@ import com.abgraphicdesing.repository.PeriodosRepository;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 public class App extends Application{
@@ -62,6 +63,12 @@ public class App extends Application{
 
   @Override
   public void start(Stage primaryStage){
+    try (var icono = getClass().getResourceAsStream("/assets/iconoAbGD.png")) {
+      if (icono != null) {
+        primaryStage.getIcons().add(new Image(icono));
+      }
+    } catch (Exception ignored) { }
+
     DbConfig configDb = new DbConfig();
     ImpresorasRepository impRepository = new ImpresorasRepository(configDb);
     ImpresorasService impService = new ImpresorasService(impRepository);
