@@ -16,7 +16,7 @@ public class DbConfig {
 
     // 2. Apuntar a la carpeta "Documentos" y dentro crear la carpeta con el nombre del proyecto
     File documentsDir = new File(userHome, "Documents");
-    File appDir = new File(documentsDir, "abgraphicdesing");
+    File appDir = new File(documentsDir, "LaserCalculator");
 
     // Si no existe la carpeta Documentos o la del proyecto, las creamos
     if (!appDir.exists()) {
